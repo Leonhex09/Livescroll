@@ -6,12 +6,12 @@
 <title>Live TV Admin</title>
 <style>
 body{font-family:Arial,sans-serif;background:#111;color:white;margin:0;padding:0;display:flex;justify-content:center;align-items:center;height:100vh;}
-.container{background:#222;padding:20px;border-radius:12px;width:320px;}
+.container{background:#222;padding:20px;border-radius:12px;width:340px;}
 input,button{width:100%;padding:10px;margin:6px 0;border:none;border-radius:6px;font-size:14px;}
 button{cursor:pointer;font-weight:bold;}
 h2{margin:0 0 10px 0;text-align:center;}
-#loginForm, #adminPanel{display:none;}
-#loginForm.active, #adminPanel.active{display:block;}
+#loginForm,#tokenForm,#adminPanel{display:none;}
+#loginForm.active,#tokenForm.active,#adminPanel.active{display:block;}
 .channel{display:flex;justify-content:space-between;align-items:center;margin:6px 0;padding:6px;background:#333;border-radius:6px;}
 .channel button{background:red;color:white;width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;}
 </style>
@@ -29,6 +29,13 @@ h2{margin:0 0 10px 0;text-align:center;}
     <p id="loginError" style="color:red;font-size:12px;text-align:center;display:none;">Invalid credentials</p>
   </div>
 
+  <!-- Token Form -->
+  <div id="tokenForm">
+    <h2>GitHub Token</h2>
+    <input type="password" id="tokenInput" placeholder="Enter your GitHub PAT">
+    <button id="saveToken">Save Token</button>
+  </div>
+
   <!-- Admin Panel -->
   <div id="adminPanel">
     <h2>Channel Manager</h2>
@@ -39,6 +46,7 @@ h2{margin:0 0 10px 0;text-align:center;}
     <h3>Current Channels</h3>
     <div id="list"></div>
     <button id="logout" style="background:#555;margin-top:10px;">Logout</button>
+    <button id="changeToken" style="background:#555;margin-top:6px;">Change GitHub Token</button>
   </div>
 
 </div>
@@ -46,22 +54,28 @@ h2{margin:0 0 10px 0;text-align:center;}
 <script>
 // ======= LOGIN =======
 const loginForm = document.getElementById('loginForm');
+const tokenForm = document.getElementById('tokenForm');
 const adminPanel = document.getElementById('adminPanel');
 const loginBtn = document.getElementById('loginBtn');
 const loginError = document.getElementById('loginError');
 
-// Hardcoded credentials (change as needed)
+// Change credentials as needed
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = '1234';
 
 loginBtn.onclick = ()=>{
   const u = document.getElementById('username').value;
   const p = document.getElementById('password').value;
-  if(u === ADMIN_USER && p === ADMIN_PASS){
+  if(u===ADMIN_USER && p===ADMIN_PASS){
     loginForm.classList.remove('active');
-    adminPanel.classList.add('active');
+    // Check if token is already saved
+    if(localStorage.getItem('githubToken')){
+      adminPanel.classList.add('active');
+      loadChannels();
+    } else {
+      tokenForm.classList.add('active');
+    }
     loginError.style.display='none';
-    loadChannels();
   } else {
     loginError.style.display='block';
   }
@@ -73,15 +87,43 @@ document.getElementById('logout').onclick = ()=>{
   loginForm.classList.add('active');
 }
 
+// ======= TOKEN MANAGEMENT =======
+const tokenInput = document.getElementById('tokenInput');
+const saveTokenBtn = document.getElementById('saveToken');
+const changeTokenBtn = document.getElementById('changeToken');
+
+saveTokenBtn.onclick = ()=>{
+  const t = tokenInput.value.trim();
+  if(!t){alert('Enter token'); return;}
+  localStorage.setItem('githubToken', t);
+  tokenForm.classList.remove('active');
+  adminPanel.classList.add('active');
+  loadChannels();
+}
+
+// Change token
+changeTokenBtn.onclick = ()=>{
+  localStorage.removeItem('githubToken');
+  adminPanel.classList.remove('active');
+  tokenForm.classList.add('active');
+  tokenInput.value = '';
+}
+
 // ======= CHANNEL MANAGEMENT =======
 let channels = [];
-
 const nameInput = document.getElementById('name');
 const descInput = document.getElementById('desc');
 const urlInput = document.getElementById('url');
 const addBtn = document.getElementById('add');
 const listDiv = document.getElementById('list');
 
+// GitHub repo settings
+const GITHUB_USER = 'YOUR_USERNAME';
+const GITHUB_REPO = 'YOUR_REPO_NAME';
+const GITHUB_BRANCH = 'main';
+const CHANNELS_PATH = 'channels.json';
+
+// Render list
 function renderList(){
   listDiv.innerHTML='';
   channels.forEach((c,i)=>{
@@ -98,32 +140,57 @@ function renderList(){
     btn.onclick=()=>{
       channels.splice(btn.dataset.i,1);
       renderList();
+      saveToGitHub();
     }
   });
 }
 
-// Add new channel
+// Add channel
 addBtn.onclick = ()=>{
   const name = nameInput.value.trim();
   const desc = descInput.value.trim();
   const url = urlInput.value.trim();
-  if(!name || !desc || !url){ alert('Fill all fields'); return; }
-  channels.push({name, desc, url});
-  nameInput.value = descInput.value = urlInput.value = '';
+  if(!name||!desc||!url){ alert('Fill all fields'); return; }
+  channels.push({name,desc,url});
+  nameInput.value=descInput.value=urlInput.value='';
   renderList();
+  saveToGitHub();
 }
 
-// Load channels from JSON
+// Load channels from GitHub
 async function loadChannels(){
   try{
-    const res = await fetch('channels.json');
+    const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${CHANNELS_PATH}`);
     channels = await res.json();
     renderList();
-  }catch(e){
-    console.error('Failed to load channels', e);
-  }
+  }catch(e){console.error('Failed to load channels', e);}
+}
+
+// Save to GitHub
+async function saveToGitHub(){
+  const token = localStorage.getItem('githubToken');
+  if(!token){alert('No GitHub token found!'); return;}
+  try{
+    const getRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${CHANNELS_PATH}`,{
+      headers:{ Authorization:`token ${token}` }
+    });
+    const fileData = await getRes.json();
+    const sha = fileData.sha;
+
+    await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${CHANNELS_PATH}`,{
+      method:'PUT',
+      headers:{ Authorization:`token ${token}`, 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        message:'Update channels from admin panel',
+        content:btoa(JSON.stringify(channels,null,2)),
+        sha:sha,
+        branch:GITHUB_BRANCH
+      })
+    });
+    alert('Channels saved to GitHub!');
+  }catch(e){console.error(e); alert('Failed to save channels. Check console.');}
 }
 </script>
 
 </body>
-      </html>
+  </html>
