@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live TV Admin</title>
+<style>
+body{font-family:Arial,sans-serif;background:#111;color:white;margin:0;padding:0;display:flex;justify-content:center;align-items:center;height:100vh;}
+.container{background:#222;padding:20px;border-radius:12px;width:320px;}
+input,button{width:100%;padding:10px;margin:6px 0;border:none;border-radius:6px;font-size:14px;}
+button{cursor:pointer;font-weight:bold;}
+h2{margin:0 0 10px 0;text-align:center;}
+#loginForm, #adminPanel{display:none;}
+#loginForm.active, #adminPanel.active{display:block;}
+.channel{display:flex;justify-content:space-between;align-items:center;margin:6px 0;padding:6px;background:#333;border-radius:6px;}
+.channel button{background:red;color:white;width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Login Form -->
+  <div id="loginForm" class="active">
+    <h2>Admin Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <p id="loginError" style="color:red;font-size:12px;text-align:center;display:none;">Invalid credentials</p>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel">
+    <h2>Channel Manager</h2>
+    <input id="name" placeholder="Channel Name">
+    <input id="desc" placeholder="Channel Description">
+    <input id="url" placeholder="Channel URL (.m3u8)">
+    <button id="add">Add Channel</button>
+    <h3>Current Channels</h3>
+    <div id="list"></div>
+    <button id="logout" style="background:#555;margin-top:10px;">Logout</button>
+  </div>
+
+</div>
+
+<script>
+// ======= LOGIN =======
+const loginForm = document.getElementById('loginForm');
+const adminPanel = document.getElementById('adminPanel');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+
+// Hardcoded credentials (change as needed)
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = '1234';
+
+loginBtn.onclick = ()=>{
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  if(u === ADMIN_USER && p === ADMIN_PASS){
+    loginForm.classList.remove('active');
+    adminPanel.classList.add('active');
+    loginError.style.display='none';
+    loadChannels();
+  } else {
+    loginError.style.display='block';
+  }
+}
+
+// Logout
+document.getElementById('logout').onclick = ()=>{
+  adminPanel.classList.remove('active');
+  loginForm.classList.add('active');
+}
+
+// ======= CHANNEL MANAGEMENT =======
+let channels = [];
+
+const nameInput = document.getElementById('name');
+const descInput = document.getElementById('desc');
+const urlInput = document.getElementById('url');
+const addBtn = document.getElementById('add');
+const listDiv = document.getElementById('list');
+
+function renderList(){
+  listDiv.innerHTML='';
+  channels.forEach((c,i)=>{
+    const div = document.createElement('div');
+    div.className='channel';
+    div.innerHTML=`
+      <span>${c.name}</span>
+      <button data-i="${i}">✖</button>
+    `;
+    listDiv.appendChild(div);
+  });
+
+  listDiv.querySelectorAll('button').forEach(btn=>{
+    btn.onclick=()=>{
+      channels.splice(btn.dataset.i,1);
+      renderList();
+    }
+  });
+}
+
+// Add new channel
+addBtn.onclick = ()=>{
+  const name = nameInput.value.trim();
+  const desc = descInput.value.trim();
+  const url = urlInput.value.trim();
+  if(!name || !desc || !url){ alert('Fill all fields'); return; }
+  channels.push({name, desc, url});
+  nameInput.value = descInput.value = urlInput.value = '';
+  renderList();
+}
+
+// Load channels from JSON
+async function loadChannels(){
+  try{
+    const res = await fetch('channels.json');
+    channels = await res.json();
+    renderList();
+  }catch(e){
+    console.error('Failed to load channels', e);
+  }
+}
+</script>
+
+</body>
+      </html>
