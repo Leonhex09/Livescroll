@@ -23,5 +23,10 @@
     "name": "3ABN Canada",
     "desc": "Christian religious television network offering faith-based programming, sermons, music, and inspirational content for families.",
     "url": "https://3abn.bozztv.com/3abncanada/3ABN/master.m3u8"
+  },
+  {
+    "name": "3ABN Dare To Dream Network",
+    "desc": "Christian faith channel focused on prophecy, Bible study, health programs, and spiritual inspiration from the 3ABN network.",
+    "url": "https://3abn.bozztv.com/3abn2/d2d_live/smil:d2d_live.smil/playlist.m3u8"
   }
 ]
