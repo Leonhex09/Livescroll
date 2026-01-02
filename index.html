@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live TV Feed</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:black;
+  overflow:hidden;
+  font-family:Arial,sans-serif;
+}
+
+/* Feed */
+.container{
+  height:100vh;
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+}
+.channel{
+  height:100vh;
+  width:100vw;
+  position:relative;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+}
+video{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:black;
+}
+
+/* Overlay */
+.overlay{
+  position:absolute;
+  bottom:20px;
+  left:20px;
+  color:white;
+}
+.live{
+  background:red;
+  padding:4px 10px;
+  border-radius:5px;
+  font-size:12px;
+}
+.name{font-size:22px;margin-top:8px;}
+.desc{opacity:.85}
+
+/* Search bar (TikTok Lite style) */
+.search-bar{
+  position:fixed;
+  top:12px;
+  left:50%;
+  transform:translateX(-50%);
+  width:80%;
+  max-width:420px;
+  background:rgba(255,255,255,.18);
+  backdrop-filter:blur(10px);
+  border-radius:30px;
+  padding:10px 18px;
+  z-index:2000;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  opacity:1;
+  transition:opacity .4s ease;
+}
+.search-bar.hidden{
+  opacity:0;
+  pointer-events:none;
+}
+.search-bar input{
+  background:none;
+  border:none;
+  outline:none;
+  color:white;
+  width:100%;
+  font-size:16px;
+}
+
+/* Floating search icon */
+.search-float{
+  position:fixed;
+  top:14px;
+  right:14px;
+  font-size:22px;
+  background:rgba(255,255,255,.2);
+  backdrop-filter:blur(10px);
+  padding:10px 12px;
+  border-radius:50%;
+  z-index:2000;
+  display:none;
+  cursor:pointer;
+}
+.search-float.show{display:block;}
+</style>
+</head>
+
+<body>
+
+<!-- Search bar -->
+<div class="search-bar" id="searchBar">
+  🔍
+  <input id="searchInput" placeholder="Search channels...">
+</div>
+
+<!-- Floating icon -->
+<div class="search-float" id="searchFloat">🔎</div>
+
+<div class="container" id="feed"></div>
+
+<script>
+const feed = document.getElementById('feed');
+let channels = []; // Will load from channels.json
+let activeVideo = null;
+
+/* IntersectionObserver */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting && entry.intersectionRatio >= 0.85){
+      const video = entry.target.querySelector('video');
+      if(video !== activeVideo){
+        activeVideo = video;
+        document.querySelectorAll('video').forEach(v=>{
+          if(v === video){
+            v.muted=false;
+            v.play().catch(()=>{});
+          } else {
+            v.pause();
+            v.currentTime=0;
+          }
+        });
+      }
+    }
+  });
+},{threshold:0.85});
+
+/* Render feed */
+function render(list){
+  feed.innerHTML='';
+  activeVideo = null;
+
+  list.forEach(c=>{
+    const sec = document.createElement('section');
+    sec.className='channel';
+    sec.innerHTML=`
+      <video playsinline></video>
+      <div class="overlay">
+        <span class="live">LIVE</span>
+        <div class="name">${c.name}</div>
+        <div class="desc">${c.desc}</div>
+      </div>`;
+    feed.appendChild(sec);
+
+    const video = sec.querySelector('video');
+    if(Hls.isSupported()){
+      const hls = new Hls();
+      hls.loadSource(c.url);
+      hls.attachMedia(video);
+    } else {
+      video.src = c.url;
+    }
+
+    observer.observe(sec);
+  });
+}
+
+/* Search logic */
+const searchBar = document.getElementById('searchBar');
+const searchFloat = document.getElementById('searchFloat');
+const searchInput = document.getElementById('searchInput');
+
+function hideSearch(){
+  searchBar.classList.add('hidden');
+  searchFloat.classList.add('show');
+}
+function showSearch(){
+  searchBar.classList.remove('hidden');
+  searchFloat.classList.remove('show');
+  searchInput.focus();
+  autoHide();
+}
+let hideTimer;
+function autoHide(){
+  clearTimeout(hideTimer);
+  hideTimer=setTimeout(hideSearch,12000);
+}
+searchFloat.onclick=showSearch;
+
+searchInput.oninput=()=>{
+  const q = searchInput.value.toLowerCase();
+  render(channels.filter(c => c.name.toLowerCase().includes(q)));
+};
+
+/* Load channels from JSON */
+fetch('channels.json')
+  .then(res => res.json())
+  .then(data => {
+    channels = data;
+    render(channels);
+  })
+  .catch(err => console.error('Failed to load channels', err));
+
+autoHide();
+</script>
+
+</body>
+</html>
