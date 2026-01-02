@@ -1,20 +1,5 @@
 [
   {
-    "name": "CBS News",
-    "desc": "US 24/7 News",
-    "url": "https://cbsn-us-cedexis.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8"
-  },
-  {
-    "name": "ABC News Live",
-    "desc": "Breaking News",
-    "url": "https://content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be.m3u8"
-  },
-  {
-    "name": "Kzn",
-    "desc": "Kennanff",
-    "url": "https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8"
-  },
-  {
     "name": "2GB Sydney",
     "desc": "Australian talk-radio channel based in Sydney, focusing on news, current affairs, interviews, and live discussions.",
     "url": "https://2gblive.akamaized.net/hls/live/2033805/2GB/index.m3u8"
