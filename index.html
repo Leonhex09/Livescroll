@@ -103,7 +103,49 @@ video{
 .search-float.show{display:block;}
 </style>
 </head>
+<!-- Popup Message -->
+<div id="popup" style="
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.6);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:9999;
+">
 
+  <div style="
+    background:#0b0b0b;
+    color:white;
+    padding:22px;
+    border-radius:18px;
+    max-width:320px;
+    width:85%;
+    text-align:center;
+    box-shadow:0 0 35px rgba(0,255,255,.25);
+    animation:pop .35s ease;
+  ">
+    <h2 id="pTitle" style="margin-top:0;"></h2>
+    <p id="pText" style="opacity:.9;"></p>
+    <button id="pBtn" style="
+      margin-top:14px;
+      padding:10px 24px;
+      background:#0ff;
+      color:#000;
+      border:none;
+      border-radius:14px;
+      font-weight:bold;
+      cursor:pointer;
+    ">Close</button>
+  </div>
+</div>
+
+<style>
+@keyframes pop{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+</style>
 <body>
 
 <!-- Search bar -->
@@ -211,6 +253,22 @@ fetch('channels.json')
 
 autoHide();
 </script>
-
+<script>
+fetch('./message.json')
+  .then(res => res.json())
+  .then(msg => {
+    if(msg.enabled){
+      document.getElementById('pTitle').textContent = msg.title;
+      document.getElementById('pText').textContent = msg.message;
+      document.getElementById('pBtn').textContent = msg.button || 'Close';
+      document.getElementById('popup').style.display = 'flex';
+    }
+  })
+  .catch(()=>{});
+  
+document.getElementById('pBtn').onclick = ()=>{
+  document.getElementById('popup').style.display = 'none';
+};
+  </script>
 </body>
 </html>
