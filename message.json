@@ -1,6 +1,6 @@
 {
-  "enabled": true,
+  "enabled": false,
   "title": "",
   "message": "Welcome ",
-  "button": "Close"
+  "button": "Join"
 }
