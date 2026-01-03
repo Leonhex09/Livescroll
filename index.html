@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +15,7 @@
     height:100%;
     background:black;
     overflow:hidden;
-    font-family:'Courier New', monospace;
+    font-family:Arial,sans-serif;
   }
 
   /* Feed */
@@ -130,62 +131,6 @@
   }
   .search-float.show{display:block;}
 
-  /* === UPDATED: Sci-Fi HUD – Transparent, Smaller, No Background Plate === */
-  .hud-corner{
-    position:fixed;
-    top:10px;
-    left:10px;
-    color:#0ff;
-    font-size:12px; /* Smaller font */
-    line-height:1.4;
-    z-index:3000;
-    pointer-events:none; /* Doesn't block touches */
-    text-shadow:0 0 8px rgba(0,255,255,0.6);
-    animation:glowPulse 4s infinite alternate;
-  }
-  @keyframes glowPulse{
-    from{text-shadow:0 0 6px rgba(0,255,255,0.5);}
-    to{text-shadow:0 0 12px rgba(0,255,255,0.8);}
-  }
-  .hud-title{
-    font-size:9px;
-    opacity:0.7;
-    letter-spacing:1.5px;
-    text-transform:uppercase;
-  }
-  .network-meter{
-    margin:8px 0;
-  }
-  .bar-container{
-    width:140px;
-    height:8px;
-    background:rgba(0,50,70,0.4);
-    border:1px solid rgba(0,255,255,0.4);
-    border-radius:4px;
-    overflow:hidden;
-    margin-top:3px;
-  }
-  .bar{
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg, #003040, #00ffff);
-    transition:width 0.8s ease;
-    box-shadow:0 0 6px #0ff;
-  }
-  .speed-text{
-    margin-top:3px;
-    font-size:13px;
-    letter-spacing:0.5px;
-  }
-  .weather{
-    margin-top:10px;
-    padding-top:8px;
-    border-top:1px dashed rgba(0,255,255,0.3);
-  }
-  .weather-temp{
-    font-size:16px;
-  }
-
   /* Popup */
   #popup {
     position:fixed;
@@ -224,23 +169,6 @@
     <h2 id="pTitle" style="margin-top:0;"></h2>
     <p id="pText" style="opacity:.9;"></p>
     <button id="pBtn" style="margin-top:14px;padding:10px 24px;background:#0ff;color:#000;border:none;border-radius:14px;font-weight:bold;cursor:pointer;">Close</button>
-  </div>
-</div>
-
-<!-- UPDATED: Sci-Fi HUD – Floating Transparent Text Only -->
-<div class="hud-corner">
-  <div class="hud-title">NETWORK LINK</div>
-  <div class="network-meter">
-    <div>Bandwidth</div>
-    <div class="bar-container"><div class="bar" id="netBar"></div></div>
-    <div class="speed-text" id="netSpeed">0.00 Mbps</div>
-  </div>
-
-  <div class="weather">
-    <div class="hud-title">ENVIRONMENTAL</div>
-    <div id="weatherLoc">Location</div>
-    <div class="weather-temp" id="weatherTemp">--°F</div>
-    <div id="weatherCond">Loading...</div>
   </div>
 </div>
 
@@ -423,61 +351,6 @@ fetch('message.json')
 document.getElementById('pBtn').onclick = () => {
   document.getElementById('popup').style.display = 'none';
 };
-
-/* === Sci-Fi Network Meter === */
-const netBar = document.getElementById('netBar');
-const netSpeed = document.getElementById('netSpeed');
-
-function updateNetworkMeter() {
-  if ('connection' in navigator) {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    let speed = 0;
-    if (conn) {
-      const type = conn.effectiveType;
-      const downlink = conn.downlink || 10;
-      speed = downlink;
-
-      if (type === '4g') speed = Math.random() * 30 + 50;
-      else if (type === '3g') speed = Math.random() * 10 + 10;
-      else if (type === 'slow-2g') speed = Math.random() * 1 + 0.5;
-    }
-
-    speed += Math.random() * 20;
-    speed = Math.min(speed, 150);
-
-    netSpeed.textContent = speed.toFixed(1) + ' Mbps';
-    netBar.style.width = (speed / 1.5) + '%';
-  } else {
-    const fakeSpeed = 40 + Math.random() * 80;
-    netSpeed.textContent = fakeSpeed.toFixed(1) + ' Mbps';
-    netBar.style.width = (fakeSpeed / 1.5) + '%';
-  }
-}
-
-setInterval(updateNetworkMeter, 1500);
-updateNetworkMeter();
-
-/* === Weather Updater === */
-const weatherLocation = "New York";
-document.getElementById('weatherLoc').textContent = weatherLocation;
-
-async function updateWeather() {
-  try {
-    const resp = await fetch(`https://wttr.in/${encodeURIComponent(weatherLocation)}?format=j1`);
-    const data = await resp.json();
-    const current = data.current_condition[0];
-    const tempF = current.temp_F;
-    const desc = current.weatherDesc[0].value;
-
-    document.getElementById('weatherTemp').textContent = tempF + '°F';
-    document.getElementById('weatherCond').textContent = desc;
-  } catch (e) {
-    document.getElementById('weatherCond').textContent = 'Offline';
-  }
-}
-
-updateWeather();
-setInterval(updateWeather, 600000); // Every 10 minutes
 </script>
 </body>
 </html>
