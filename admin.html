@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Livescroll Admin</title>
+<style>
+
+/* ===============================
+   GLOBAL RESET
+================================ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===============================
+   BODY
+================================ */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(120deg, #0f0c29, #302b63, #24243e);
+  background-size: 600% 600%;
+  animation: gradientShift 20s ease infinite;
+  color: #ffffff;
+
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: block;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===============================
+   CONTAINER (LOGIN / ADMIN)
+================================ */
+.container {
+  position: relative;
+  width: 420px;
+  max-width: 95%;
+  margin: 30px auto;
+
+  padding: 30px;
+  border-radius: 25px;
+
+  background: rgba(20, 20, 30, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border: 1px solid rgba(0,255,255,0.25);
+  box-shadow:
+    0 0 40px rgba(0,255,255,0.2),
+    inset 0 0 20px rgba(0,128,255,0.15);
+
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+/* Scrollbar (container) */
+.container::-webkit-scrollbar {
+  width: 6px;
+}
+.container::-webkit-scrollbar-thumb {
+  background: #00fff0;
+  border-radius: 3px;
+}
+
+/* ===============================
+   SECTIONS (PAGES)
+================================ */
+section {
+  display: none;
+  animation: fadeSlide 0.4s ease forwards;
+}
+
+section.active {
+  display: block;
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===============================
+   HEADINGS
+================================ */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #00fff0;
+  text-shadow: 0 0 8px rgba(0,255,255,0.7);
+}
+
+/* ===============================
+   INPUTS & TEXTAREA
+================================ */
+input,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+
+  background: rgba(30,30,50,0.6);
+  color: #00fff0;
+
+  border: 1px solid rgba(0,255,255,0.3);
+  border-radius: 14px;
+
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(0,255,255,0.4);
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #00fff0;
+  box-shadow: 0 0 12px rgba(0,255,255,0.6);
+  background: rgba(30,30,50,0.85);
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+
+  font-size: 14px;
+  font-weight: bold;
+
+  color: #000;
+  background: linear-gradient(145deg, #00fff0, #008cff);
+
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+
+  box-shadow: 0 8px 25px rgba(0,255,255,0.4);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0,255,255,0.6);
+}
+
+button.secondary {
+  background: transparent;
+  color: #00fff0;
+  border: 1px solid #00fff0;
+  box-shadow: none;
+}
+
+button.secondary:hover {
+  background: rgba(0,255,255,0.15);
+}
+
+/* ===============================
+   CHANNEL LIST
+================================ */
+.channel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 14px;
+  margin-bottom: 8px;
+
+  border-radius: 15px;
+  background: rgba(30,30,50,0.55);
+  border: 1px solid rgba(0,255,255,0.25);
+
+  box-shadow: inset 0 0 10px rgba(0,128,255,0.15);
+  transition: all 0.3s ease;
+}
+
+.channel:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(0,255,255,0.35);
+}
+
+.channel button {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+/* ===============================
+   UNDO BUTTON
+================================ */
+#undoBtn {
+  background: linear-gradient(145deg, #ffb300, #ff9800);
+  color: #000;
+}
+
+#undoBtn:hover {
+  box-shadow: 0 0 20px rgba(255,180,0,0.6);
+}
+
+/* ===============================
+   FLOATING CHANNEL BUTTON
+================================ */
+.floating-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+
+  background: linear-gradient(145deg, #00fff0, #008cff);
+  color: #000;
+  font-size: 26px;
+
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 0 15px 35px rgba(0,255,255,0.5);
+  z-index: 9999;
+
+  animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 15px rgba(0,255,255,0.4); }
+  50% { box-shadow: 0 0 35px rgba(0,255,255,0.8); }
+  100% { box-shadow: 0 0 15px rgba(0,255,255,0.4); }
+}
+
+/* ===============================
+   ADMIN POPUPS
+================================ */
+.admin-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+
+  width: 300px;
+  max-width: 90%;
+  padding: 22px;
+
+  background: rgba(10,10,20,0.95);
+  border-radius: 16px;
+  border: 1px solid rgba(0,255,255,0.3);
+
+  text-align: center;
+  color: #fff;
+
+  box-shadow:
+    0 0 30px rgba(0,255,255,0.6),
+    inset 0 0 20px rgba(0,128,255,0.25);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 10000;
+}
+
+.admin-popup.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+.admin-popup h3 {
+  color: #00fff0;
+  margin-bottom: 10px;
+}
+
+.admin-popup.error h3 {
+  color: #ff4c4c;
+}
+
+.admin-popup.undo h3 {
+  color: #ffb300;
+}
+
+/* ===============================
+   MESSAGES
+================================ */
+.message {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 8px;
+  color: #00fff0;
+}
+
+.error {
+  color: #ff4c4c;
+}
+
+/* ===============================
+   TORCH EFFECT HOLDER
+================================ */
+#torchContainer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#torch {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 65%);
+  position: absolute;
+  mix-blend-mode: screen;
+  transition: transform 0.05s linear;
+}
+
+/*@keyframes gradientShift {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
+
+/* ===== CHRISTMAS LIGHTS ===== */
+.christmas-lights {
+  position: fixed;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.christmas-lights span {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin: 0 6px;
+  border-radius: 50%;
+  background: red;
+  box-shadow: 0 0 12px currentColor;
+  animation: blink 1.5s infinite alternate;
+}
+
+.christmas-lights span:nth-child(2) { background: yellow; animation-delay: 0.2s; }
+.christmas-lights span:nth-child(3) { background: green; animation-delay: 0.4s; }
+.christmas-lights span:nth-child(4) { background: blue; animation-delay: 0.6s; }
+.christmas-lights span:nth-child(5) { background: orange; animation-delay: 0.8s; }
+
+@keyframes blink {
+  0%   { opacity: 0.2; transform: scale(0.7); }
+  50%  { opacity: 1;   transform: scale(1.2); }
+  100% { opacity: 0.2; transform: scale(0.9); }
+}
+
+@keyframes blink {
+  0% { opacity: 0.2; transform: scale(0.7);}
+  50% { opacity: 1; transform: scale(1.2);}
+  100% { opacity: 0.2; transform: scale(0.9);}
+}
+
+/* ===== CONTAINER ===== */
+.container {
+  position: relative;
+  background: rgba(20, 20, 30, 0.75); /* Transparent glass */
+  backdrop-filter: blur(20px);
+  padding: 30px 35px;
+  border-radius: 25px;
+  width: 420px;
+  max-width: 90%;
+  box-shadow: 0 0 40px rgba(0,255,255,0.2), 0 15px 50px rgba(0,128,255,0.2);
+  border: 1px solid rgba(0,255,255,0.2);
+  transition: all 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== HIDE/SHOW SECTIONS ===== */
+section { display: none; }
+section.active { display: block; transition: all 0.3s ease; }
+
+/* ===== HEADINGS ===== */
+h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #00fff0;
+  text-shadow: 0 0 8px #00fff0, 0 0 16px #008cff;
+  font-size: 24px;
+}
+
+/* ===== INPUTS ===== */
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid rgba(0,255,255,0.3);
+  border-radius: 12px;
+  background: rgba(30,30,50,0.6);
+  color: #00fff0;
+  font-size: 14px;
+  box-shadow: inset 0 0 6px rgba(0,255,255,0.2);
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border: 1px solid #00fff0;
+  box-shadow: 0 0 12px #00fff0, inset 0 0 6px rgba(0,255,255,0.3);
+  background: rgba(30,30,50,0.8);
+}
+
+/* ===== BUTTONS ===== */
+button {
+  padding: 10px;
+  margin: 6px 0;
+  border: none;
+  border-radius: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(145deg, #00fff0, #008cff);
+  color: #000;
+  box-shadow: 0 5px 15px rgba(0,255,255,0.3);
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+button:hover {
+  background: linear-gradient(145deg, #008cff, #00fff0);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,255,255,0.5);
+}
+
+/* ===== COLLAPSIBLE SECTIONS ===== */
+.collapsible {
+  background: linear-gradient(145deg, #00fff0, #008cff);
+  color: #000;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 15px;
+  font-weight: bold;
+  margin: 6px 0;
+  transition: all 0.3s ease;
+}
+
+.collapsible:hover {
+  background: linear-gradient(145deg, #008cff, #00fff0);
+}
+
+.content {
+  padding: 6px 12px;
+  display: none;
+  margin-bottom: 10px;
+}
+
+/* ===== CHANNEL BOXES ===== */
+.channel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(30,30,50,0.5);
+  border-radius: 15px;
+  padding: 8px 12px;
+  margin: 6px 0;
+  box-shadow: 0 0 10px rgba(0,255,255,0.2), 0 5px 10px rgba(0,128,255,0.1);
+  transition: all 0.3s ease;
+}
+
+.channel:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 15px rgba(0,255,255,0.4), 0 8px 15px rgba(0,128,255,0.2);
+}
+
+.channel button {
+  background: linear-gradient(145deg, #00fff0, #008cff);
+  color: #000;
+  border-radius: 12px;
+  font-size: 12px;
+  padding: 6px 10px;
+  transition: all 0.3s ease;
+}
+
+.channel button:hover {
+  background: linear-gradient(145deg, #008cff, #00fff0);
+  transform: translateY(-1px);
+}
+
+/* ===== UNDO BUTTON ===== */
+#undoBtn {
+  background: #ff9800;
+  color: #000;
+  border-radius: 15px;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(255,152,0,0.3);
+}
+#undoBtn:hover {
+  background: #ffc107;
+  transform: translateY(-1px);
+}
+
+/* ===== HISTORY & STATS ===== */
+#historyDiv, #statsDiv {
+  background: rgba(30,30,50,0.5);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: inset 0 0 15px rgba(0,128,255,0.1);
+  font-size: 13px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+/* ===== MESSAGE & ERROR ===== */
+.message {
+  font-size: 12px;
+  color: #00fff0;
+  text-align: center;
+  margin: 6px 0;
+  font-style: italic;
+}
+.error {
+  color: #ff1744;
+  text-align: center;
+}
+
+/* ===== SCROLLBAR ===== */
+#historyDiv::-webkit-scrollbar, #statsDiv::-webkit-scrollbar {
+  width: 6px;
+}
+#historyDiv::-webkit-scrollbar-thumb, #statsDiv::-webkit-scrollbar-thumb {
+  background: #00fff0;
+  border-radius: 3px;
+}
+
+/* ===== TORCH EFFECT ===== */
+#torchContainer {
+  box-shadow: 0 0 30px rgba(0,255,255,0.2) inset;
+  border: 2px solid rgba(255,255,255,0.1);
+}
+
+#torch {
+  transition: transform 0.05s ease-out;
+}
+
+/* ===== POPUPS ===== */
+.admin-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateY(-20px);
+  background: rgba(10,10,20,0.95);
+  border: 2px solid rgba(0,255,255,0.3);
+  border-radius: 14px;
+  padding: 20px 22px;
+  width: 300px;
+  max-width: 90%;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,255,255,0.6), 0 0 50px rgba(0,192,255,0.2) inset;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 9999;
+  font-family: 'Arial', sans-serif;
+  pointer-events: auto;
+}
+.admin-popup.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0);
+}
+
+/* Popup titles */
+.admin-popup h3 { margin: 0 0 10px 0; font-size: 18px; color: #0ff; text-shadow: 0 0 6px rgba(0,255,255,0.7); }
+.admin-popup p { font-size: 14px; margin: 0 0 12px 0; opacity: 0.85; }
+.admin-popup button { padding: 8px 20px; background: rgba(0,255,255,0.15); border: 1px solid #0ff; border-radius: 8px; color: #0ff; cursor: pointer; font-weight: bold; transition: all 0.2s ease; }
+.admin-popup button:hover { background: rgba(0,255,255,0.35); box-shadow: 0 0 15px rgba(0,255,255,0.5); transform: scale(1.05); }
+
+/* POPUP STYLES FOR ERROR/SUCCESS/UNDO */
+.admin-popup.error h3 { color: #ff4c4c; text-shadow: 0 0 6px rgba(255,76,76,0.7); }
+.admin-popup.error button { border-color: #ff4c4c; color: #ff4c4c; }
+.admin-popup.success h3 { color: #0ff; text-shadow: 0 0 6px rgba(0,255,255,0.9); }
+.admin-popup.undo h3 { color: #ffb400; text-shadow: 0 0 6px rgba(255,180,0,0.7); }
+.admin-popup.undo button { border-color: #ffb400; color: #ffb400; }
+
+/* ===== STAGGERED POPUP ANIMATION ===== */
+.admin-popup.stagger-1 { transition-delay: 0.05s; }
+.admin-popup.stagger-2 { transition-delay: 0.1s; }
+.admin-popup.stagger-3 { transition-delay: 0.15s; }
+
+
+/* ===== BODY CENTERING & FULL HEIGHT ===== */
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;   /* full viewport height */
+  overflow: hidden; /* hide scrollbars */
+}
+
+/* ===== CHRISTMAS LIGHTS ===== */
+.christmas-lights {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+}
+
+.christmas-lights span {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin: 0 5px;
+  border-radius: 50%;
+  background: red;
+  box-shadow: 0 0 10px red;
+  animation: blink 1.5s infinite;
+}
+
+.christmas-lights span:nth-child(2) { background: yellow; animation-delay: 0.2s; }
+.christmas-lights span:nth-child(3) { background: green; animation-delay: 0.4s; }
+.christmas-lights span:nth-child(4) { background: blue; animation-delay: 0.6s; }
+.christmas-lights span:nth-child(5) { background: orange; animation-delay: 0.8s; }
+
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.3; }
+}
+
+/* ===== CONTAINER STYLING TWEAKS ===== */
+.container {
+  position: relative; /* required for popups and torch */
+  max-width: 400px;   /* responsive max-width */
+  width: 90%;         /* responsive width */
+}
+
+/* ===== FALLING SNOW ===== */
+.snowflake {
+  position: fixed;
+  top: -10px;
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 9999;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes fall {
+  0% { transform: translateY(0) translateX(0); }
+  100% { transform: translateY(110vh) translateX(20px); }
+}
+
+
+/* ===== FALLING SNOW ===== */
+.snowflake {
+  position: absolute;
+  top: -10px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  pointer-events: none;
+  animation-timing-function: linear;
+}
+
+/* ===== ICE PILE ===== */
+#icePile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background: linear-gradient(to top, rgba(255,255,255,0.5), rgba(255,255,255,0));
+  pointer-events: none;
+  z-index: 999;
+  transition: height 2s ease, opacity 3s ease;
+}
+
+/* ===== WET SCREEN EFFECT ===== */
+.wetScreen {
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: rgba(255,255,255,0.05);
+  pointer-events:none;
+  z-index:998;
+  backdrop-filter: blur(1px);
+  opacity:0;
+  transition: opacity 2s ease;
+}
+
+
+
+
+/* ICE PILE WITH FIRE MELT */
+#icePile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background: linear-gradient(to top, rgba(255,255,255,0.8), rgba(255,255,255,0));
+  pointer-events: none;
+  z-index: 999;
+  transition: height 0.5s ease, background 0.5s ease;
+}
+
+/* WET SCREEN EFFECT */
+.wetScreen {
+  position: fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  background: rgba(255,255,255,0.05);
+  pointer-events:none;
+  z-index:998;
+  backdrop-filter: blur(1px);
+  opacity:0;
+  transition: opacity 1s ease;
+}
+
+/* FIRE MELT EFFECT */
+#icePile.fire {
+  background: linear-gradient(to top, rgba(255,140,0,0.9), rgba(255,69,0,0.7), rgba(255,255,255,0));
+  transition: height 0.3s ease, background 0.3s ease;
+}    
+
+
+>>>>>
+  /* Remove flex centering that blocks scroll */
+  display: block;
+  overflow-x: hidden;
+}
+
+/* Center login container only when small enough */
+.container {
+  background: rgba(20, 20, 30, 0.85);
+  backdrop-filter: blur(15px);
+  padding: 25px 30px;
+  border-radius: 25px;
+  width: 420px;
+  box-shadow: 0 0 30px rgba(0,255,255,0.2), 0 10px 30px rgba(0,128,255,0.2);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,255,255,0.2);
+
+  /* Allow scroll inside container if needed */
+  max-height: 90vh;
+  overflow-y: auto;
+
+  /* Center container horizontally */
+  margin: 20px auto;
+}
+
+</style>
+</head>
+
+
+
+<body>
+<div class="container">
+
+  <!-- LOGIN -->
+  <section id="loginForm" class="active">
+    <h2>Admin Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+    <p id="loginError" class="error"></p>
+  </section>
+
+  <!-- GITHUB INFO -->
+  <section id="githubForm">
+    <h2>GitHub Repository Info</h2>
+    <input type="text" id="repoUser" placeholder="GitHub username">
+    <input type="text" id="repoName" placeholder="Repository name">
+    <input type="password" id="tokenInput" placeholder="Personal Access Token">
+    <button id="saveRepo">Save & Continue</button>
+  </section>
+
+  <!-- ADMIN PANEL -->
+  <section id="adminPanel">
+    <h2>Admin Panel</h2>
+
+    <button id="logout">Logout</button>
+    <button id="changeGitHub">Change GitHub Info</button>
+
+    <!-- CHANNELS -->
+    <button class="collapsible">Channels</button>
+    <div class="content" id="channelsContent">
+      <input id="name" placeholder="Channel Name">
+      <input id="desc" placeholder="Channel Description">
+      <input id="url" placeholder="Channel URL (.m3u8)">
+      <button id="add">Add Channel</button>
+      <div id="message" class="message"></div>
+      <div id="list"></div>
+      <button id="undoBtn">Undo Delete</button>
+    </div>
+
+    <!-- HISTORY -->
+    <button class="collapsible">History</button>
+    <div class="content" id="historyContent">
+      <div id="historyDiv"></div>
+    </div>
+
+    <!-- USER STATS -->
+    <button class="collapsible">User Stats</button>
+    <div class="content" id="statsContent">
+      <div id="statsDiv"><h3>User Statistics (Torch Mode)</h3>
+<div id="torchContainer" style="position:relative;width:100%;height:300px;background:#000; border-radius:12px; overflow:hidden; cursor:none;">
+  <canvas id="userStatsTorch" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+  <div id="torch" style="position:absolute;width:150px;height:150px;border-radius:50%;pointer-events:none;mix-blend-mode:screen;box-shadow:0 0 150px 100px rgba(255,255,255,0.6);opacity:0.9;"></div>
+</div></div>
+    </div>
+
+    <!-- POPUP MESSAGE -->
+    <button class="collapsible">Popup Message</button>
+    <div class="content" id="popupContent">
+      <input id="msgTitle" placeholder="Popup Title">
+      
+      
+      <div id="popupStatus" class="message" style="font-size:13px;color:#0ff;opacity:0;transition:opacity 0.4s;"></div>
+      
+      
+      <textarea id="msgText" placeholder="Popup Message"></textarea>
+      <input id="msgBtn" placeholder="Button text (e.g. Close)">
+      <label><input type="checkbox" id="msgEnabled"> Enable popup</label>
+      <button id="saveMessage">Save Popup Message</button>
+    </div>
+  </section>
+</div>
+
+<script>
+// ===== COLLAPSIBLE LOGIC =====
+document.querySelectorAll('.collapsible').forEach(btn=>{
+  btn.onclick = ()=>{
+    const content = btn.nextElementSibling;
+    content.style.display = content.style.display==='block' ? 'none':'block';
+  }
+});
+</script>
+
+<script>
+// ======== LOGIN & GITHUB ========
+const loginForm = document.getElementById('loginForm');
+const githubForm = document.getElementById('githubForm');
+const adminPanel = document.getElementById('adminPanel');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const saveRepoBtn = document.getElementById('saveRepo');
+const changeGitHubBtn = document.getElementById('changeGitHub');
+const logoutBtn = document.getElementById('logout');
+
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = '1234';
+
+loginBtn.onclick = ()=>{
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    loginForm.classList.remove('active');
+    loginError.textContent = '';
+    // Show GitHub form if missing info
+    if(!localStorage.getItem('githubUser') || !localStorage.getItem('githubRepo') || !localStorage.getItem('githubToken')){
+      githubForm.classList.add('active');
+      document.getElementById('repoUser').value = localStorage.getItem('githubUser')||'';
+      document.getElementById('repoName').value = localStorage.getItem('githubRepo')||'';
+      document.getElementById('tokenInput').value = localStorage.getItem('githubToken')||'';
+    } else {
+      adminPanel.classList.add('active');
+      loadChannels();
+      loadPopupMessage();
+    }
+  } else loginError.textContent='Invalid credentials';
+}
+
+saveRepoBtn.onclick = ()=>{
+  const user = document.getElementById('repoUser').value.trim();
+  const repo = document.getElementById('repoName').value.trim();
+  const token = document.getElementById('tokenInput').value.trim();
+  if(!user || !repo || !token){ alert('Fill all fields'); return; }
+
+  localStorage.setItem('githubUser', user);
+  localStorage.setItem('githubRepo', repo);
+  localStorage.setItem('githubToken', token);
+
+  githubForm.classList.remove('active');
+  adminPanel.classList.add('active');
+  loadChannels();
+  loadPopupMessage();
+}
+
+changeGitHubBtn.onclick = ()=>{
+  localStorage.removeItem('githubUser');
+  localStorage.removeItem('githubRepo');
+  localStorage.removeItem('githubToken');
+  adminPanel.classList.remove('active');
+  githubForm.classList.add('active');
+}
+
+logoutBtn.onclick = ()=>{
+  adminPanel.classList.remove('active');
+  loginForm.classList.add('active');
+}
+
+// ======== CHANNEL MANAGEMENT ========
+let channels = [];
+let deletedStack = [];
+let historyLog = [];
+let stats = {added:0,deleted:0,edited:0};
+
+const nameInput = document.getElementById('name');
+const descInput = document.getElementById('desc');
+const urlInput = document.getElementById('url');
+const addBtn = document.getElementById('add');
+const listDiv = document.getElementById('list');
+const messageDiv = document.getElementById('message');
+const historyDiv = document.getElementById('historyDiv');
+const statsDiv = document.getElementById('statsDiv');
+const undoBtn = document.getElementById('undoBtn');
+
+// RENDER CHANNEL LIST
+function renderChannels(){
+  listDiv.innerHTML='';
+  if(channels.length===0){ listDiv.innerHTML='<p>No channels yet.</p>'; }
+  channels.forEach((c,i)=>{
+    const div = document.createElement('div');
+    div.className='channel';
+    div.innerHTML=`
+      <span>${c.name} (${c.desc})</span>
+      <div>
+        <button data-i="${i}" class="editBtn">✎</button>
+        <button data-i="${i}" class="delBtn">✖</button>
+      </div>
+    `;
+    listDiv.appendChild(div);
+  });
+
+  // Delete button
+  document.querySelectorAll('.delBtn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const idx = btn.dataset.i;
+      deletedStack.push(channels[idx]);
+      channels.splice(idx,1);
+      addHistory(`Deleted channel: ${deletedStack[deletedStack.length-1].name}`);
+      stats.deleted++;
+      updateStats();
+      renderChannels();
+      saveToGitHub('Deleted a channel');
+    }
+  });
+
+  // Edit button
+  document.querySelectorAll('.editBtn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const idx = btn.dataset.i;
+      const c = channels[idx];
+      nameInput.value = c.name;
+      descInput.value = c.desc;
+      urlInput.value = c.url;
+      channels.splice(idx,1);
+      addHistory(`Editing channel: ${c.name}`);
+      stats.edited++;
+      updateStats();
+      renderChannels();
+    }
+  });
+}
+
+// ADD CHANNEL
+addBtn.onclick = ()=>{
+  const name = nameInput.value.trim();
+  const desc = descInput.value.trim();
+  const url = urlInput.value.trim();
+  if(!name || !desc || !url){ alert('Fill all fields'); return; }
+
+  channels.push({name,desc,url});
+  addHistory(`Added channel: ${name}`);
+  stats.added++;
+  updateStats();
+  renderChannels();
+  saveToGitHub('Added a channel');
+
+  nameInput.value=descInput.value=urlInput.value='';
+}
+
+// UNDO DELETE
+undoBtn.onclick = ()=>{
+  if(deletedStack.length===0){ alert('Nothing to undo'); return; }
+  const last = deletedStack.pop();
+  channels.push(last);
+  addHistory(`Restored channel: ${last.name}`);
+  renderChannels();
+  saveToGitHub('Undo delete channel');
+}
+
+// ===== HISTORY & STATS =====
+function addHistory(text){
+  const ts = new Date().toLocaleString();
+  historyLog.unshift(`${ts}: ${text}`);
+  renderHistory();
+}
+
+function renderHistory(){
+  historyDiv.innerHTML = historyLog.map(h=>`<div>${h}</div>`).join('');
+}
+
+function updateStats(){
+  statsDiv.innerHTML = `
+    Added: ${stats.added} <br>
+    Deleted: ${stats.deleted} <br>
+    Edited: ${stats.edited}
+  `;
+}
+
+// ======== GITHUB API ========
+function getGitHubInfo(){
+  return {
+    user: localStorage.getItem('githubUser'),
+    repo: localStorage.getItem('githubRepo'),
+    token: localStorage.getItem('githubToken'),
+    branch: 'main',
+    path: 'channels.json'
+  };
+}
+
+async function loadChannels(){
+  const info = getGitHubInfo();
+  messageDiv.textContent='Loading channels...';
+  try{
+    const res = await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/${info.path}?ref=${info.branch}`,{
+      headers:{ Authorization:`token ${info.token}` }
+    });
+    const data = await res.json();
+    const content = atob(data.content.replace(/\n/g,''));
+    channels = JSON.parse(content);
+    renderChannels();
+    messageDiv.textContent='Channels loaded!';
+  }catch(e){
+    console.log('Failed to load channels', e);
+    messageDiv.textContent='Failed to load channels. Check token & repo.';
+  }
+}
+
+async function saveToGitHub(action='Updated channels'){
+  const info = getGitHubInfo();
+  if(!info.token){ alert('No GitHub token found!'); return; }
+  messageDiv.textContent='Saving...';
+  try{
+    const getRes = await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/${info.path}`,{
+      headers:{ Authorization:`token ${info.token}` }
+    });
+    let sha = null;
+    if(getRes.ok){
+      const fileData = await getRes.json();
+      sha = fileData.sha;
+    }
+    await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/${info.path}`,{
+      method:'PUT',
+      headers:{ Authorization:`token ${info.token}`, 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        message: action,
+        content: btoa(JSON.stringify(channels,null,2)),
+        sha: sha,
+        branch: info.branch
+      })
+    });
+    messageDiv.textContent='Channels saved!';
+  }catch(e){
+    console.error(e);
+    messageDiv.textContent='Failed to save channels.';
+  }
+}
+
+// ===== POPUP MESSAGE =====
+const msgTitle = document.getElementById('msgTitle');
+const msgText = document.getElementById('msgText');
+const msgBtn = document.getElementById('msgBtn');
+const msgEnabled = document.getElementById('msgEnabled');
+const saveMessage = document.getElementById('saveMessage');
+const MESSAGE_FILE = 'message.json';
+
+async function loadPopupMessage(){
+  const info = getGitHubInfo();
+  try{
+    const res = await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/${MESSAGE_FILE}`,{
+      headers:{ Authorization:`token ${info.token}` }
+    });
+    const data = await res.json();
+    const msg = JSON.parse(atob(data.content.replace(/\n/g,'')));
+    msgTitle.value = msg.title || '';
+    msgText.value = msg.message || '';
+    msgBtn.value = msg.button || '';
+    msgEnabled.checked = msg.enabled===true;
+  }catch(e){
+    console.log('message.json not found yet');
+  }
+}
+
+saveMessage.onclick = async ()=>{
+  const info = getGitHubInfo();
+  const payload = {
+    enabled: msgEnabled.checked,
+    title: msgTitle.value,
+    message: msgText.value,
+    button: msgBtn.value || 'Close'
+  };
+
+  const getRes = await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/${MESSAGE_FILE}`,{
+    headers:{ Authorization:`token ${info.token}` }
+  });
+
+  let sha = null;
+  if(getRes.ok){
+    const file = await getRes.json();
+    sha = file.sha;
+  }
+
+  await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/${MESSAGE_FILE}`,{
+    method:'PUT',
+    headers:{
+      Authorization:`token ${info.token}`,
+      'Content-Type':'application/json'
+    },
+    body: JSON.stringify({
+      message:'Update popup message',
+      content:btoa(JSON.stringify(payload,null,2)),
+      sha: sha,
+      branch:'main'
+    })
+  });
+
+  alert('Popup updated successfully!');
+};
+
+
+const torch = document.getElementById('torch');
+const torchContainer = document.getElementById('torchContainer');
+
+// Move torch with mouse
+torchContainer.addEventListener('mousemove', e=>{
+  const rect = torchContainer.getBoundingClientRect();
+  const x = e.clientX - rect.left - torch.offsetWidth/2;
+  const y = e.clientY - rect.top - torch.offsetHeight/2;
+  torch.style.transform = `translate(${x}px, ${y}px)`;
+});
+
+
+
+// Example data
+const userStatsDataTorch = {
+  labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+  datasets: [{
+    label: 'Active Users',
+    data: [12,19,7,14,23,18],
+    borderColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    tension:0.4,
+    pointRadius:6,
+    pointHoverRadius:10
+  }]
+};
+
+// Chart config
+const configTorch = {
+  type:'line',
+  data:userStatsDataTorch,
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{ labels:{ color:'#fff' } },
+      tooltip:{ mode:'index', intersect:false }
+    },
+    scales:{
+      x:{ ticks:{ color:'#fff' }, grid:{ color:'rgba(255,255,255,0.05)' } },
+      y:{ ticks:{ color:'#fff' }, grid:{ color:'rgba(255,255,255,0.05)' } }
+    }
+  }
+};
+
+new Chart(document.getElementById('userStatsTorch'), configTorch);
+
+
+function renderList(){
+  listDiv.innerHTML='';
+  if(channels.length===0) listDiv.innerHTML='<p>No channels yet.</p>';
+
+  channels.forEach((c,i)=>{
+    const div = document.createElement('div');
+    div.className='channel';
+    div.innerHTML=`
+      <span>${c.name}</span>
+      <button data-i="${i}">✖</button>
+    `;
+    listDiv.appendChild(div);
+
+    // Add show class with delay
+    setTimeout(()=>{ div.classList.add('show'); }, i*100); // staggered animation
+
+    // Delete button
+    div.querySelector('button').onclick = ()=>{
+      const removed = channels.splice(i,1)[0];
+      renderList();
+      saveToGitHub('Deleted channel.');
+      // store for undo
+      lastDeleted = removed;
+    }
+  });
+}
+
+function showAdminPopup(payload){
+  const popup = document.createElement('div');
+  popup.className = 'admin-popup';
+  popup.innerHTML = `
+    <h3>${payload.title}</h3>
+    <p>${payload.message}</p>
+    <button>${payload.button || 'Close'}</button>
+  `;
+  document.body.appendChild(popup);
+
+  // Show with animation
+  setTimeout(()=>{ popup.classList.add('show'); }, 50);
+
+  // Close button
+  popup.querySelector('button').onclick = () => {
+    popup.classList.remove('show');
+    setTimeout(()=> popup.remove(), 500);
+  }
+
+  // Auto-remove after 6 seconds
+  setTimeout(()=>{
+    if(popup.parentElement){
+      popup.classList.remove('show');
+      setTimeout(()=> popup.remove(), 500);
+    }
+  }, 6000);
+}
+
+const popupStatus = document.getElementById('popupStatus');
+
+saveMessage.onclick = async ()=>{
+  const info = getGitHubInfo();
+  const payload = {
+    enabled: msgEnabled.checked,
+    title: msgTitle.value,
+    message: msgText.value,
+    button: msgBtn.value || 'Close'
+  };
+
+  popupStatus.style.opacity = 1;
+  popupStatus.textContent = 'Saving popup message...';
+  popupStatus.style.color = '#0ff';
+
+  try{
+    // Fetch existing file to get sha
+    const getRes = await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/message.json`,{
+      headers:{ Authorization:`token ${info.token}` }
+    });
+
+    let sha = null;
+    if(getRes.ok){
+      const file = await getRes.json();
+      sha = file.sha;
+    }
+
+    // Save updated message
+    const saveRes = await fetch(`https://api.github.com/repos/${info.user}/${info.repo}/contents/message.json`,{
+      method:'PUT',
+      headers:{ Authorization:`token ${info.token}`, 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        message:'Update popup message',
+        content:btoa(JSON.stringify(payload,null,2)),
+        sha: sha,
+        branch:'main'
+      })
+    });
+
+    if(saveRes.ok){
+      popupStatus.textContent = 'Popup message updated successfully!';
+      popupStatus.style.color = '#0ff';
+      showAdminPopup({
+        title: "Popup Updated",
+        message: "Your futuristic popup has been saved.",
+        type: "success",
+        button: "Got it"
+      });
+    } else {
+      throw new Error('Save failed');
+    }
+  }catch(e){
+    console.error(e);
+    popupStatus.textContent = 'Failed to save popup message!';
+    popupStatus.style.color = '#ff4c4c';
+    showAdminPopup({
+      title: "Error",
+      message: "Failed to save popup message. Check console.",
+      type: "error",
+      button: "Retry"
+    });
+  }
+
+  // Fade out status after 4s
+  setTimeout(()=> popupStatus.style.opacity=0, 4000);
+};
+
+
+
+
+</script>
+
+<script>
+// ===== CREATE FALLING SNOW =====
+const snowCount = 50; // number of snowflakes
+for (let i = 0; i < snowCount; i++) {
+  const snow = document.createElement('div');
+  snow.classList.add('snowflake');
+  snow.style.left = Math.random() * window.innerWidth + 'px';
+  snow.style.animationDuration = (5 + Math.random() * 5) + 's'; // speed variation
+  snow.style.opacity = 0.2 + Math.random() * 0.8;
+  snow.style.width = snow.style.height = (2 + Math.random() * 6) + 'px';
+  document.body.appendChild(snow);
+}
+</script>
+
+<script>
+// ===== SNOW SETTINGS =====
+const snowCount = 50;
+const snowflakes = [];
+const icePile = document.createElement('div');
+icePile.id = 'icePile';
+document.body.appendChild(icePile);
+
+const wetScreen = document.createElement('div');
+wetScreen.className = 'wetScreen';
+document.body.appendChild(wetScreen);
+
+// Create snowflakes
+for (let i = 0; i < snowCount; i++) {
+  const snow = document.createElement('div');
+  snow.classList.add('snowflake');
+  snow.style.left = Math.random() * window.innerWidth + 'px';
+  snow.style.width = snow.style.height = (4 + Math.random() * 6) + 'px';
+  snow.speed = 1 + Math.random() * 2;
+  snow.melt = false;
+  document.body.appendChild(snow);
+  snowflakes.push(snow);
+}
+
+// Animate snowflakes
+function animateSnow() {
+  snowflakes.forEach(snow => {
+    let top = parseFloat(snow.style.top || 0);
+    top += snow.speed;
+    snow.style.top = top + 'px';
+
+    // If reaches bottom, add to ice pile
+    if(top > window.innerHeight - 5 && !snow.melt){
+      snow.style.display='none';
+      snow.melt = true;
+      const currentHeight = parseFloat(icePile.style.height) || 0;
+      icePile.style.height = (currentHeight + snow.offsetHeight) + 'px';
+      // Slowly melt
+      setTimeout(()=>{
+        icePile.style.height = Math.max(0, currentHeight) + 'px';
+        wetScreen.style.opacity = 0.1 + Math.random() * 0.1;
+        setTimeout(()=>{ wetScreen.style.opacity=0; }, 3000);
+      }, 1000 + Math.random()*1000);
+    }
+
+    // Reset snowflake to top randomly
+    if(top > window.innerHeight) {
+      snow.style.top = '-10px';
+      snow.style.left = Math.random() * window.innerWidth + 'px';
+      snow.style.display='block';
+      snow.melt = false;
+    }
+  });
+  requestAnimationFrame(animateSnow);
+}
+
+animateSnow();
+</script>
+<script>
+// Get login container position
+const loginContainer = document.querySelector('.container');
+const icePile = document.getElementById('icePile');
+const wetScreen = document.querySelector('.wetScreen');
+
+function animateSnowWithFire(snowflakes) {
+  snowflakes.forEach(snow => {
+    let top = parseFloat(snow.style.top || 0);
+    top += snow.speed;
+    snow.style.top = top + 'px';
+
+    // Bottom of the screen
+    if(top > window.innerHeight - 5 && !snow.melt){
+      snow.style.display='none';
+      snow.melt = true;
+
+      // Increase ice pile height
+      const currentHeight = parseFloat(icePile.style.height) || 0;
+      icePile.style.height = (currentHeight + snow.offsetHeight) + 'px';
+
+      // Check collision with login container
+      const loginTop = loginContainer.getBoundingClientRect().top;
+      if(window.innerHeight - parseFloat(icePile.style.height) <= loginTop + 10){
+        // Fire effect
+        icePile.classList.add('fire');
+
+        // Melt quickly
+        setTimeout(()=>{
+          icePile.style.height = '0px';
+          icePile.classList.remove('fire');
+
+          // Wet screen effect
+          wetScreen.style.opacity = 0.2;
+          setTimeout(()=>{ wetScreen.style.opacity=0; }, 1500);
+        }, 800); // fire lasts 0.8s
+      }
+    }
+
+    // Reset snowflake to top
+    if(top > window.innerHeight) {
+      snow.style.top = '-10px';
+      snow.style.left = Math.random() * window.innerWidth + 'px';
+      snow.style.display='block';
+      snow.melt = false;
+    }
+  });
+  requestAnimationFrame(()=>animateSnowWithFire(snowflakes));
+}
+
+// Start snow animation
+animateSnowWithFire(snowflakes);
+</script>
+</body>
+</html>
