@@ -140,6 +140,35 @@ z-index:9999;
   </div>
 </div>
 
+  @keyframes pop{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+@keyframes slideIn{
+  from{transform:translateY(-100%);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+#popup {
+  animation: slideIn .5s ease-out;
+}
+
+.popup-info {
+  background-color: #0b0b0b;
+  box-shadow: 0 0 35px rgba(0, 255, 255, .25);
+}
+
+.popup-warning {
+  background-color: #ffcc00;
+  box-shadow: 0 0 35px rgba(255, 215, 0, .5);
+}
+
+.popup-error {
+  background-color: #ff4444;
+  box-shadow: 0 0 35px rgba(255, 0, 0, .5);
+}
+
 <style>
 @keyframes pop{
   from{transform:scale(.8);opacity:0}
@@ -269,6 +298,85 @@ fetch('./message.json')
 document.getElementById('pBtn').onclick = ()=>{
   document.getElementById('popup').style.display = 'none';
 };
+
+  fetch('./message.json')
+  .then(res => res.json())
+  .then(msg => {
+    if (msg.enabled) {
+      // Set the title and message content
+      document.getElementById('pTitle').textContent = msg.title;
+      document.getElementById('pText').textContent = msg.message;
+      document.getElementById('pBtn').textContent = msg.button || 'Close';
+
+      // Apply popup styles based on message type
+      const popup = document.getElementById('popup');
+      const popupContainer = popup.querySelector('div');
+      
+      if (msg.type === 'warning') {
+        popupContainer.classList.add('popup-warning');
+      } else if (msg.type === 'error') {
+        popupContainer.classList.add('popup-error');
+      } else {
+        popupContainer.classList.add('popup-info');
+      }
+
+      popup.style.display = 'flex';
+    }
+  })
+  .catch(() => {});
+
+  const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const video = entry.target.querySelector('video');
+    if (entry.isIntersecting && entry.intersectionRatio >= 0.85) {
+      // Load the video only when it comes into view
+      if (video && !video.src) {
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(video.dataset.url);
+          hls.attachMedia(video);
+        } else {
+          video.src = video.dataset.url;
+        }
+        video.load(); // Preload the video for immediate playback
+      }
+      if (video !== activeVideo) {
+        activeVideo = video;
+        document.querySelectorAll('video').forEach(v => {
+          if (v === video) {
+            v.muted = false;
+            v.play().catch(() => {});
+          } else {
+            v.pause();
+            v.currentTime = 0;
+          }
+        });
+      }
+    }
+  });
+}, { threshold: 0.85 });
+
+  function render(list) {
+  feed.innerHTML = '';
+  activeVideo = null;
+
+  list.forEach(c => {
+    const sec = document.createElement('section');
+    sec.className = 'channel';
+    sec.innerHTML = `
+      <video playsinline data-url="${c.url}"></video>
+      <div class="overlay">
+        <span class="live">LIVE</span>
+        <div class="name">${c.name}</div>
+        <div class="desc">${c.desc}</div>
+      </div>`;
+    feed.appendChild(sec);
+
+    const video = sec.querySelector('video');
+    observer.observe(sec);
+  });
+  }
+  
   </script>
 </body>
 </html>
