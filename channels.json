@@ -1,10 +1,5 @@
 [
   {
-    "name": "KZN",
-    "desc": "Entertainment valued",
-    "url": "https://cdn.freevisiontv.co.za/sttv/smil:1kzn.stream.smil/playlist.m3u8"
-  },
-  {
     "name": "2gb Sydney",
     "desc": "Australian talk-radio channel based in Sydney, focusing on news, current affairs, interviews, and live discussions.",
     "url": "https://2gblive.akamaized.net/hls/live/2033805/2GB/index.m3u8"
