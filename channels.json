@@ -53,5 +53,15 @@
     "name": "3ABN English",
     "desc": "English-language Christian network offering religious programming, sermons, family-friendly faith content, and music.",
     "url": "https://3abn.bozztv.com/3abn2/3abn_live/smil:3abn_live.smil/playlist.m3u8"
+  },
+  {
+    "name": "3ABN date to dream work",
+    "desc": "Christian faith channel focused on prophecy, Bible study, health programs, and spiritual inspiration from the 3ABN network.",
+    "url": "https://3abn.bozztv.com/3abn2/d2d_live/smil:d2d_live.smil/playlist.m3u8"
+  },
+  {
+    "name": "30A Georgia Hollywood",
+    "desc": "Entertainment news and celebrity interviews",
+    "url": "https://30a-tv.com/gh.m3u8"
   }
 ]
