@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,152 +8,112 @@
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
-html,body{
-  margin:0;
-  padding:0;
-  height:100%;
-  background:black;
-  overflow:hidden;
-  font-family:Arial,sans-serif;
-}
-
-/* Feed */
-.container{
-  height:100vh;
-  overflow-y:scroll;
-  scroll-snap-type:y mandatory;
-  scroll-behavior:smooth;
-  -webkit-overflow-scrolling:touch;
-}
-.channel{
-  height:100vh;
-  width:100vw;
-  position:relative;
-  scroll-snap-align:start;
-  scroll-snap-stop:always;
-}
-video{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  background:black;
-}
-
-/* Overlay */
-.overlay{
-  position:absolute;
-  bottom:20px;
-  left:20px;
-  color:white;
-}
-.live{
-  background:red;
-  padding:4px 10px;
-  border-radius:5px;
-  font-size:12px;
-}
-.name{font-size:22px;margin-top:8px;}
-.desc{opacity:.85}
-
-/* Search bar (TikTok Lite style) */
-.search-bar{
-  position:fixed;
-  top:12px;
-  left:50%;
-  transform:translateX(-50%);
-  width:80%;
-  max-width:420px;
-  background:rgba(255,255,255,.18);
-  backdrop-filter:blur(10px);
-  border-radius:30px;
-  padding:10px 18px;
-  z-index:2000;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  opacity:1;
-  transition:opacity .4s ease;
-}
-.search-bar.hidden{
-  opacity:0;
-  pointer-events:none;
-}
-.search-bar input{
-  background:none;
-  border:none;
-  outline:none;
-  color:white;
-  width:100%;
-  font-size:16px;
-}
-
-/* Floating search icon */
-.search-float{
-  position:fixed;
-  top:14px;
-  right:14px;
-  font-size:22px;
-  background:rgba(255,255,255,.2);
-  backdrop-filter:blur(10px);
-  padding:10px 12px;
-  border-radius:50%;
-  z-index:2000;
-  display:none;
-  cursor:pointer;
-}
-.search-float.show{display:block;}
-
-
-  @keyframes pop{
-  from{transform:scale(.8);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
-
-@keyframes slideIn{
-  from{transform:translateY(-100%);opacity:0}
-  to{transform:translateY(0);opacity:1}
-}
-
-#popup {
-  animation: slideIn .5s ease-out;
-}
-
-.popup-info {
-  background-color: #0b0b0b;
-  box-shadow: 0 0 35px rgba(0, 255, 255, .25);
-}
-
-.popup-warning {
-  background-color: #ffcc00;
-  box-shadow: 0 0 35px rgba(255, 215, 0, .5);
-}
-
-.popup-error {
-  background-color: #ff4444;
-  box-shadow: 0 0 35px rgba(255, 0, 0, .5);
-}
-
-<style>
-@keyframes pop{
-  from{transform:scale(.8);opacity:0}
-  to{transform:scale(1);opacity:1}
+  html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:black;
+    overflow:hidden;
+    font-family:Arial,sans-serif;
   }
 
-  
-</style>
-</head>
-<!-- Popup Message -->
-<div id="popup" style="
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.6);
-display:none;
-align-items:center;
-justify-content:center;
-z-index:9999;
-">
+  /* Feed */
+  .container{
+    height:100vh;
+    overflow-y:scroll;
+    scroll-snap-type:y mandatory;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+  }
+  .channel{
+    height:100vh;
+    width:100vw;
+    position:relative;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+  }
+  video{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    background:black;
+  }
 
-  <div style="
+  /* Overlay */
+  .overlay{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    color:white;
+  }
+  .live{
+    background:red;
+    padding:4px 10px;
+    border-radius:5px;
+    font-size:12px;
+  }
+  .name{font-size:22px;margin-top:8px;}
+  .desc{opacity:.85}
+
+  /* Search bar */
+  .search-bar{
+    position:fixed;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
+    width:80%;
+    max-width:420px;
+    background:rgba(255,255,255,.18);
+    backdrop-filter:blur(10px);
+    border-radius:30px;
+    padding:10px 18px;
+    z-index:2000;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    opacity:1;
+    transition:opacity .4s ease;
+  }
+  .search-bar.hidden{
+    opacity:0;
+    pointer-events:none;
+  }
+  .search-bar input{
+    background:none;
+    border:none;
+    outline:none;
+    color:white;
+    width:100%;
+    font-size:16px;
+  }
+
+  /* Floating search icon */
+  .search-float{
+    position:fixed;
+    top:14px;
+    right:14px;
+    font-size:22px;
+    background:rgba(255,255,255,.2);
+    backdrop-filter:blur(10px);
+    padding:10px 12px;
+    border-radius:50%;
+    z-index:2000;
+    display:none;
+    cursor:pointer;
+  }
+  .search-float.show{display:block;}
+
+  /* Popup */
+  #popup {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  }
+  #popup > div {
     background:#0b0b0b;
     color:white;
     padding:22px;
@@ -162,25 +123,30 @@ z-index:9999;
     text-align:center;
     box-shadow:0 0 35px rgba(0,255,255,.25);
     animation:pop .35s ease;
-  ">
+  }
+  .popup-warning { background:#ffcc00; box-shadow:0 0 35px rgba(255,215,0,.5); color:#000; }
+  .popup-error   { background:#ff4444; box-shadow:0 0 35px rgba(255,0,0,.5); }
+
+  @keyframes pop{
+    from{transform:scale(.8);opacity:0}
+    to{transform:scale(1);opacity:1}
+  }
+  @keyframes slideIn{
+    from{transform:translateY(-100%);opacity:0}
+    to{transform:translateY(0);opacity:1}
+  }
+</style>
+</head>
+<body>
+
+<!-- Popup Message -->
+<div id="popup">
+  <div>
     <h2 id="pTitle" style="margin-top:0;"></h2>
     <p id="pText" style="opacity:.9;"></p>
-    <button id="pBtn" style="
-      margin-top:14px;
-      padding:10px 24px;
-      background:#0ff;
-      color:#000;
-      border:none;
-      border-radius:14px;
-      font-weight:bold;
-      cursor:pointer;
-    ">Close</button>
+    <button id="pBtn" style="margin-top:14px;padding:10px 24px;background:#0ff;color:#000;border:none;border-radius:14px;font-weight:bold;cursor:pointer;">Close</button>
   </div>
 </div>
-
-
-</style>
-<body>
 
 <!-- Search bar -->
 <div class="search-bar" id="searchBar">
@@ -195,156 +161,41 @@ z-index:9999;
 
 <script>
 const feed = document.getElementById('feed');
-let channels = []; // Will load from channels.json
+let channels = [];
 let activeVideo = null;
 
-/* IntersectionObserver */
+// IntersectionObserver for lazy loading + play/pause
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
-    if(entry.isIntersecting && entry.intersectionRatio >= 0.85){
-      const video = entry.target.querySelector('video');
-      if(video !== activeVideo){
-        activeVideo = video;
-        document.querySelectorAll('video').forEach(v=>{
-          if(v === video){
-            v.muted=false;
-            v.play().catch(()=>{});
-          } else {
-            v.pause();
-            v.currentTime=0;
-          }
-        });
-      }
-    }
-  });
-},{threshold:0.85});
+    const section = entry.target;
+    const video = section.querySelector('video');
 
-/* Render feed */
-function render(list){
-  feed.innerHTML='';
-  activeVideo = null;
-
-  list.forEach(c=>{
-    const sec = document.createElement('section');
-    sec.className='channel';
-    sec.innerHTML=`
-      <video playsinline></video>
-      <div class="overlay">
-        <span class="live">LIVE</span>
-        <div class="name">${c.name}</div>
-        <div class="desc">${c.desc}</div>
-      </div>`;
-    feed.appendChild(sec);
-
-    const video = sec.querySelector('video');
-    if(Hls.isSupported()){
-      const hls = new Hls();
-      hls.loadSource(c.url);
-      hls.attachMedia(video);
-    } else {
-      video.src = c.url;
-    }
-
-    observer.observe(sec);
-  });
-}
-
-/* Search logic */
-const searchBar = document.getElementById('searchBar');
-const searchFloat = document.getElementById('searchFloat');
-const searchInput = document.getElementById('searchInput');
-
-function hideSearch(){
-  searchBar.classList.add('hidden');
-  searchFloat.classList.add('show');
-}
-function showSearch(){
-  searchBar.classList.remove('hidden');
-  searchFloat.classList.remove('show');
-  searchInput.focus();
-  autoHide();
-}
-let hideTimer;
-function autoHide(){
-  clearTimeout(hideTimer);
-  hideTimer=setTimeout(hideSearch,12000);
-}
-searchFloat.onclick=showSearch;
-
-searchInput.oninput=()=>{
-  const q = searchInput.value.toLowerCase();
-  render(channels.filter(c => c.name.toLowerCase().includes(q)));
-};
-
-/* Load channels from JSON */
-fetch('channels.json')
-  .then(res => res.json())
-  .then(data => {
-    channels = data;
-    render(channels);
-  })
-  .catch(err => console.error('Failed to load channels', err));
-
-autoHide();
-</script>
-<script>
-fetch('./message.json')
-  .then(res => res.json())
-  .then(msg => {
-    if(msg.enabled){
-      document.getElementById('pTitle').textContent = msg.title;
-      document.getElementById('pText').textContent = msg.message;
-      document.getElementById('pBtn').textContent = msg.button || 'Close';
-      document.getElementById('popup').style.display = 'flex';
-    }
-  })
-  .catch(()=>{});
-  
-document.getElementById('pBtn').onclick = ()=>{
-  document.getElementById('popup').style.display = 'none';
-};
-
-  fetch('./message.json')
-  .then(res => res.json())
-  .then(msg => {
-    if (msg.enabled) {
-      // Set the title and message content
-      document.getElementById('pTitle').textContent = msg.title;
-      document.getElementById('pText').textContent = msg.message;
-      document.getElementById('pBtn').textContent = msg.button || 'Close';
-
-      // Apply popup styles based on message type
-      const popup = document.getElementById('popup');
-      const popupContainer = popup.querySelector('div');
-      
-      if (msg.type === 'warning') {
-        popupContainer.classList.add('popup-warning');
-      } else if (msg.type === 'error') {
-        popupContainer.classList.add('popup-error');
-      } else {
-        popupContainer.classList.add('popup-info');
-      }
-
-      popup.style.display = 'flex';
-    }
-  })
-  .catch(() => {});
-
-  const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    const video = entry.target.querySelector('video');
     if (entry.isIntersecting && entry.intersectionRatio >= 0.85) {
-      // Load the video only when it comes into view
-      if (video && !video.src) {
+      // Lazy load HLS only when visible
+      if (!section._hls && video.dataset.url) {
         if (Hls.isSupported()) {
-          const hls = new Hls();
+          const hls = new Hls({
+            liveSyncDurationCount: 3,
+            liveMaxLatencyDurationCount: 6,
+          });
           hls.loadSource(video.dataset.url);
           hls.attachMedia(video);
+          section._hls = hls;
+
+          // Optional: handle errors gracefully
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+              console.error('HLS fatal error:', data);
+              // Could show overlay "Stream offline"
+            }
+          });
         } else {
           video.src = video.dataset.url;
         }
-        video.load(); // Preload the video for immediate playback
+        video.load();
       }
+
+      // Play current, pause others
       if (video !== activeVideo) {
         activeVideo = video;
         document.querySelectorAll('video').forEach(v => {
@@ -353,35 +204,111 @@ document.getElementById('pBtn').onclick = ()=>{
             v.play().catch(() => {});
           } else {
             v.pause();
-            v.currentTime = 0;
           }
         });
+      }
+    } else {
+      // Clean up when leaving view
+      if (section._hls) {
+        section._hls.destroy();
+        section._hls = null;
+      }
+      if (video === activeVideo) {
+        video.pause();
       }
     }
   });
 }, { threshold: 0.85 });
 
-  function render(list) {
+// Render channels
+function render(list) {
   feed.innerHTML = '';
   activeVideo = null;
 
   list.forEach(c => {
-    const sec = document.createElement('section');
-    sec.className = 'channel';
-    sec.innerHTML = `
-      <video playsinline data-url="${c.url}"></video>
+    const section = document.createElement('section');
+    section.className = 'channel';
+    section.innerHTML = `
+      <video playsinline data-url="${c.url}" poster="${c.poster || ''}"></video>
       <div class="overlay">
         <span class="live">LIVE</span>
         <div class="name">${c.name}</div>
         <div class="desc">${c.desc}</div>
       </div>`;
-    feed.appendChild(sec);
+    feed.appendChild(section);
 
-    const video = sec.querySelector('video');
-    observer.observe(sec);
+    // Store reference for cleanup
+    section._hls = null;
+
+    observer.observe(section);
   });
-  }
-  
-  </script>
+}
+
+// Search logic
+const searchBar = document.getElementById('searchBar');
+const searchFloat = document.getElementById('searchFloat');
+const searchInput = document.getElementById('searchInput');
+
+function hideSearch() {
+  searchBar.classList.add('hidden');
+  searchFloat.classList.add('show');
+}
+function showSearch() {
+  searchBar.classList.remove('hidden');
+  searchFloat.classList.remove('show');
+  searchInput.focus();
+  autoHide();
+}
+let hideTimer;
+function autoHide() {
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(hideSearch, 12000);
+}
+searchFloat.onclick = showSearch;
+
+searchInput.oninput = () => {
+  const q = searchInput.value.trim().toLowerCase();
+  const filtered = channels.filter(c => 
+    c.name.toLowerCase().includes(q) || 
+    (c.desc && c.desc.toLowerCase().includes(q))
+  );
+  render(filtered);
+};
+
+// Load channels
+fetch('channels.json')
+  .then(res => res.json())
+  .then(data => {
+    channels = data;
+    render(channels);
+    autoHide(); // Start auto-hide after load
+  })
+  .catch(err => {
+    console.error('Failed to load channels.json', err);
+  });
+
+// Popup message
+fetch('message.json')
+  .then(res => res.json())
+  .then(msg => {
+    if (msg.enabled) {
+      document.getElementById('pTitle').textContent = msg.title || '';
+      document.getElementById('pText').textContent = msg.message || '';
+      document.getElementById('pBtn').textContent = msg.button || 'Close';
+
+      const popupContainer = document.querySelector('#popup > div');
+      popupContainer.className = ''; // reset
+      if (msg.type === 'warning') popupContainer.classList.add('popup-warning');
+      else if (msg.type === 'error') popupContainer.classList.add('popup-error');
+
+      document.getElementById('popup').style.display = 'flex';
+    }
+  })
+  .catch(() => {});
+
+document.getElementById('pBtn').onclick = () => {
+  document.getElementById('popup').style.display = 'none';
+};
+</script>
 </body>
-</html>
+  </html>
