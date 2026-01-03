@@ -101,6 +101,44 @@ video{
   cursor:pointer;
 }
 .search-float.show{display:block;}
+
+
+  @keyframes pop{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+@keyframes slideIn{
+  from{transform:translateY(-100%);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+#popup {
+  animation: slideIn .5s ease-out;
+}
+
+.popup-info {
+  background-color: #0b0b0b;
+  box-shadow: 0 0 35px rgba(0, 255, 255, .25);
+}
+
+.popup-warning {
+  background-color: #ffcc00;
+  box-shadow: 0 0 35px rgba(255, 215, 0, .5);
+}
+
+.popup-error {
+  background-color: #ff4444;
+  box-shadow: 0 0 35px rgba(255, 0, 0, .5);
+}
+
+<style>
+@keyframes pop{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+  }
+
+  
 </style>
 </head>
 <!-- Popup Message -->
@@ -140,40 +178,7 @@ z-index:9999;
   </div>
 </div>
 
-  @keyframes pop{
-  from{transform:scale(.8);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
 
-@keyframes slideIn{
-  from{transform:translateY(-100%);opacity:0}
-  to{transform:translateY(0);opacity:1}
-}
-
-#popup {
-  animation: slideIn .5s ease-out;
-}
-
-.popup-info {
-  background-color: #0b0b0b;
-  box-shadow: 0 0 35px rgba(0, 255, 255, .25);
-}
-
-.popup-warning {
-  background-color: #ffcc00;
-  box-shadow: 0 0 35px rgba(255, 215, 0, .5);
-}
-
-.popup-error {
-  background-color: #ff4444;
-  box-shadow: 0 0 35px rgba(255, 0, 0, .5);
-}
-
-<style>
-@keyframes pop{
-  from{transform:scale(.8);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
 </style>
 <body>
 
