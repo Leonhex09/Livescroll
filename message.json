@@ -1,5 +1,5 @@
 {
-  "enabled": true,
+  "enabled": false,
   "title": "Heads up",
   "message": "Welcome but still under maintenance ",
   "button": "Ok "
