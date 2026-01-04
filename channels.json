@@ -68,5 +68,10 @@
     "name": "30A TV Classic Movies",
     "desc": "Classic movies nonstop",
     "url": "https://30a-tv.com/feeds/pzaz/30atvmovies.m3u8"
+  },
+  {
+    "name": "American Horrors",
+    "desc": "Horrors and thrilling moments in Space",
+    "url": "http://107.167.7.162:8081/playlist/amhor/playlist.m3u8"
   }
 ]
