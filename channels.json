@@ -68,5 +68,10 @@
     "name": "3ABN Proclaim! Network",
     "desc": "Sharing the Gospel worldwide",
     "url": "https://3abn.bozztv.com/3abn2/Pro_live/smil:Pro_live.smil/playlist.m3u8"
+  },
+  {
+    "name": "3ABN Praise Him Music Network",
+    "desc": "Christian music 24/7",
+    "url": "https://3abn.bozztv.com/3abn1/PraiseHim/smil:PraiseHim.smil/playlist.m3u8"
   }
 ]
