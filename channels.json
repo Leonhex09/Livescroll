@@ -58,5 +58,15 @@
     "name": "30A Georgia Hollywood",
     "desc": "Entertainment news and celebrity interviews",
     "url": "https://30a-tv.com/gh.m3u8"
+  },
+  {
+    "name": "American Horrors",
+    "desc": "Horrors and thrilling moments in Space",
+    "url": "http://107.167.7.162:8081/playlist/amhor/playlist.m3u8"
+  },
+  {
+    "name": "3ABN Proclaim! Network",
+    "desc": "Sharing the Gospel worldwide",
+    "url": "https://3abn.bozztv.com/3abn2/Pro_live/smil:Pro_live.smil/playlist.m3u8"
   }
 ]
