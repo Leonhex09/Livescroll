@@ -20,11 +20,6 @@
     "url": "https://2gblive.akamaized.net/hls/live/2033805/2GB/index.m3u8"
   },
   {
-    "name": "6PR Perth",
-    "desc": "News, talk, and sports",
-    "url": "https://6prlive.akamaized.net/hls/live/2033806/6PR/index.m3u8"
-  },
-  {
     "name": "Africa24English",
     "desc": "Africa24 English is a 24/7 English-language news channel delivering African and global news from an African perspective.",
     "url": "https://edge20.vedge.infomaniak.com/livecast/ik:africa24english/manifest.m3u8"
