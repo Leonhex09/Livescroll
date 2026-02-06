@@ -63,5 +63,10 @@
     "name": "3ABN Praise Him Music Network",
     "desc": "Christian music 24/7",
     "url": "https://3abn.bozztv.com/3abn1/PraiseHim/smil:PraiseHim.smil/playlist.m3u8"
+  },
+  {
+    "name": "Bloomberg Tv us",
+    "desc": "Live U.S. financial news, stock markets, and expert analysis",
+    "url": "https://bloomberg.com/media-manifest/streams/us.m3u8"
   }
 ]
