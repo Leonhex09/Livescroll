@@ -68,5 +68,10 @@
     "name": "BBC One South West HD",
     "desc": "UK general entertainment channel with news, shows, documentaries, and live events (HD quality).",
     "url": "https://stream.nexyl.uk/ee971134-115e-4418-8d1d-69dff7d4c6eb.m3u8"
+  },
+  {
+    "name": "BBC Three / CBBC",
+    "desc": "Children & family content, animation, and educational shows.",
+    "url": "https://viamotionhsi.netplus.ch/live/eds/bbc3cbbc/browser-HLS8/bbc3cbbc.m3u8"
   }
 ]
