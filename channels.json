@@ -73,5 +73,10 @@
     "name": "BBC Three / CBBC",
     "desc": "Children & family content, animation, and educational shows.",
     "url": "https://viamotionhsi.netplus.ch/live/eds/bbc3cbbc/browser-HLS8/bbc3cbbc.m3u8"
+  },
+  {
+    "name": "BBC Two",
+    "desc": "BBC channel focused on documentaries, culture, and arts programs.",
+    "url": "https://viamotionhsi.netplus.ch/live/eds/bbc2/browser-HLS8/bbc2.m3u8"
   }
 ]
