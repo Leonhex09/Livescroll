@@ -88,5 +88,10 @@
     "name": "BET jams",
     "desc": "Music channel, mostly hip-hop and R&B videos and live events.",
     "url": "https://fl1.moveonjoy.com/BET_Jams/index.m3u8"
+  },
+  {
+    "name": "BET soul",
+    "desc": "Channel focused on soul, R&B, and classic music programming.",
+    "url": "https://fl1.moveonjoy.com/BET_SOUL/index.m3u8"
   }
 ]
