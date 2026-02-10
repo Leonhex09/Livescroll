@@ -95,16 +95,6 @@
     "url": "https://maverick-maverick-black-cinema-3-us.roku.wurl.tv/playlist.m3u8"
   },
   {
-    "name": "Metro Globe Network",
-    "desc": "International news channel offering global and political analysis.",
-    "url": "https://edge.medcom.id/live-edge/smil:mgnch.smil/playlist.m3u8"
-  },
-  {
-    "name": "MagellanTV Now",
-    "desc": "Documentaries covering history, science, crime, and world events.",
-    "url": "https://amg00376-magellan-amg00376c5-samsung-au-1708.playouts.now.amagi.tv/playlist/amg00376-magellantv-magellantvnowww-samsungau/playlist.m3u8"
-  },
-  {
     "name": "MGM+ Drive-In",
     "desc": "24/7 movies featuring classics and modern blockbusters.",
     "url": "https://fl1.moveonjoy.com/EPIX_DRIVE_IN/index.m3u8"
