@@ -25,11 +25,6 @@
     "url": "https://30a-tv.com/gh.m3u8"
   },
   {
-    "name": "American Horrors",
-    "desc": "Horrors and thrilling moments in Space",
-    "url": "http://107.167.7.162:8081/playlist/amhor/playlist.m3u8"
-  },
-  {
     "name": "Court Tv",
     "desc": "Live courtroom trials, legal analysis, and true-crime coverage.",
     "url": "https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01438-ewscrippscompan-courttv-tablo/playlist.m3u8"
@@ -105,283 +100,283 @@
     "url": "https://maverick-maverick-black-cinema-3-us.roku.wurl.tv/playlist.m3u8"
   },
   {
-  "name": "Lolwe TV",
-  "desc": "Local Kenyan television featuring news, culture, and community programming.",
-  "url": "https://goliveafrica.media:9998/live/62580e144eb43/index.m3u8"
-},
-{
-  "name": "Mashariki TV",
-  "desc": "Swahili-focused regional TV with news and entertainment content.",
-  "url": "https://goliveafrica.media:9998/live/634adc0806f2b/index.m3u8"
-},
-{
-  "name": "MERU TV",
-  "desc": "Community television serving Meru County with local news and programs.",
-  "url": "https://goliveafrica.media:9998/live/628e5c1991061/index.m3u8"
-},
-{
-  "name": "Metro Globe Network",
-  "desc": "International news channel offering global and political analysis.",
-  "url": "https://edge.medcom.id/live-edge/smil:mgnch.smil/playlist.m3u8"
-},
-{
-  "name": "MagellanTV Now",
-  "desc": "Documentaries covering history, science, crime, and world events.",
-  "url": "https://amg00376-magellan-amg00376c5-samsung-au-1708.playouts.now.amagi.tv/playlist/amg00376-magellantv-magellantvnowww-samsungau/playlist.m3u8"
-},
-{
-  "name": "MGM+ Drive-In",
-  "desc": "24/7 movies featuring classics and modern blockbusters.",
-  "url": "https://fl1.moveonjoy.com/EPIX_DRIVE_IN/index.m3u8"
-},
-{
-  "name": "MGM+ East",
-  "desc": "Main MGM+ channel with premium movies and original series.",
-  "url": "https://fl1.moveonjoy.com/EPIX/index.m3u8"
-},
-{
-  "name": "MGM+ Marquee",
-  "desc": "Curated selection of hit films and MGM originals.",
-  "url": "https://fl1.moveonjoy.com/EPIX_2/index.m3u8"
-},
-{
-  "name": "MHZ",
-  "desc": "International crime, mystery, and drama television series.",
-  "url": "https://mhz-samsung-linear-ca.samsung.wurl.tv/playlist.m3u8"
-},
-{
-  "name": "MBC FM",
-  "desc": "Arabic music and radio-style entertainment channel.",
-  "url": "https://dbbv9umqcd7cs.cloudfront.net/out/v1/db15b75c3cc0400c91961468d6a232ac/index.m3u8"
-},
-{
-  "name": "MBC Loud",
-  "desc": "Youth-focused music channel featuring hip-hop and trending hits.",
-  "url": "https://d2lfa0y84k5bwn.cloudfront.net/out/v1/86dd4506a70c4d7fb35e2ab50296d9a3/index.m3u8"
-},
-{
-  "name": "Mezzo",
-  "desc": "Classical music, jazz, opera, and live concert performances.",
-  "url": "https://viamotionhsi.netplus.ch/live/eds/mezzo/browser-HLS8/mezzo.m3u8"
-},
-{
-  "name": "Manatee Schools Television",
-  "desc": "Educational programming and school district coverage.",
-  "url": "https://reflect-mcsb-vod.cablecast.tv/live-16/live/live.m3u8"
-},
-{
-  "name": "Martin County MCTV",
-  "desc": "Local government meetings and public service announcements.",
-  "url": "https://cdn3.wowza.com/5/UWpORHhLSEs5SkJs/martin/G0074_002/playlist.m3u8"
-},
-{
-  "name": "Miami Beach TV",
-  "desc": "City government coverage, tourism, and community information.",
-  "url": "https://edge-f.swagit.com/live/miamibeachfl/live-1-a/playlist.m3u8"
-},
-{
-  "name": "Midpen Media Arts",
-  "desc": "Local arts, culture, and lifestyle programming.",
-  "url": "https://5c2974786200d.streamlock.net/live-chan30/ngrp:ch30_all/playlist.m3u8"
-},
-{
-  "name": "Midpen Media Diversity",
-  "desc": "Multicultural community programming and local voices.",
-  "url": "https://5c2974786200d.streamlock.net/live-chan75/ngrp:ch75_all/playlist.m3u8"
-},
-{
-  "name": "Midpen Media Government",
-  "desc": "Government meetings and public affairs coverage.",
-  "url": "https://5c2974786200d.streamlock.net/live-chan26/ngrp:ch26_all/playlist.m3u8"
-},
-{
-  "name": "Madani Channel English",
-  "desc": "Islamic teachings, lectures, and religious discussions.",
-  "url": "https://streaming.madanichannel.tv/static/streaming-playlists/hls/c6a600b0-82cb-454a-8953-2bb2bb372edc/master.m3u8"
-},
-{
-  "name": "Maranatha TV",
-  "desc": "Christian worship services and inspirational programming.",
-  "url": "https://media.streambrothers.com:1936/8298/8298/playlist.m3u8"
-},
-{
-  "name": "Master’s TV",
-  "desc": "Faith-based television featuring sermons and teachings.",
-  "url": "https://mn-nl.mncdn.com/commectv_live/masterstv/index.m3u8"
-},
-{
-  "name": "Mana Church Online",
-  "desc": "Live church services and Christian inspirational content.",
-  "url": "https://w2.manasat.com/church-online/smil:church-online.smil/playlist.m3u8"
-},
-{
-  "name": "Lovetoons TV",
-  "desc": "Kids cartoons and family-friendly animation channel.",
-  "url": "https://kali1.everestcast.com:3674/stream/play.m3u8"
-},
-{
-  "name": "LTN Family",
-  "desc": "Family-oriented entertainment including dramas and talk shows.",
-  "url": "http://66.102.120.18:8000/play/a04a/index.m3u8"
-},
-{
-  "name": "Made in Hollywood",
-  "desc": "Movie news, celebrity interviews, and behind-the-scenes Hollywood content.",
-  "url": "https://connection3-ent-nz.samsung.wurl.tv/playlist.m3u8"
-},
-{
-  "name": "Maverick Black Cinema",
-  "desc": "Movies celebrating Black stories, creators, and culture.",
-  "url": "https://maverick-maverick-black-cinema-3-us.roku.wurl.tv/playlist.m3u8"
-},
-{
-  "name": "Midnight Pulp",
-  "desc": "Cult movies, horror, anime, and underground cinema.",
-  "url": "https://amg01201-cinedigmenterta-midnightpulp-cineverse-axym1.amagi.tv/playlist/amg01201-cinedigmenterta-midnightpulp-cineverse/playlist.m3u8"
-},
-{
-  "name": "Love in Venice",
-  "desc": "Scenic travel channel showcasing Venice culture and city views.",
-  "url": "https://59d7d6f47d7fc.streamlock.net/loveinvenice/loveinvenice/playlist.m3u8"
-},
-{
-  "name": "Loupe 4K",
-  "desc": "Ultra-HD art, photography, and museum-style visual experiences.",
-  "url": "https://d2dw21aq0j0l5c.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/LoupeArt-prod/playlist.m3u8"
-},
-{
-  "name": "Long Beach Television",
-  "desc": "City council meetings, local news, and civic programming.",
-  "url": "https://edge-f.swagit.com/live/longbeachca/live-3-a/playlist.m3u8"
-},
-{
-  "name": "LA Local Channel 36",
-  "desc": "Educational and community television from Los Angeles.",
-  "url": "https://reflect-channel36-la.cablecast.tv/live-3/live/stream-1/live.m3u8"
-},
-{
-  "name": "Marin TV Community",
-  "desc": "Community events and local programming from San Rafael, California.",
-  "url": "http://96.68.164.217/live-13/live/live.m3u8"
-},
-{
-  "name": "Marin TV Education",
-  "desc": "Educational programs and school-related content.",
-  "url": "http://96.68.164.217/live-15/live/live.m3u8"
-},
-{
-  "name": "Marin TV Government",
-  "desc": "Live government meetings and public affairs coverage.",
-  "url": "http://96.68.164.217/live-14/live/live.m3u8"
-},
-{
-  "name": "LoveWorld Asia",
-  "desc": "International Christian television from the LoveWorld network.",
-  "url": "https://cdnstack.internetmultimediaonline.org/auxano/Hindilanx/index.m3u8"
-},
-{
-  "name": "LoveWorld CASA",
-  "desc": "Spanish-language Christian teaching and worship programming.",
-  "url": "https://j78dp6reyq5r-hls-live.5centscdn.com/kview/5c6d78cffa59e129f040fcec2d788532.sdp/playlist.m3u8"
-},
-{
-  "name": "LoveWorld XP",
-  "desc": "Youth-focused Christian lifestyle, music, and talk shows.",
-  "url": "https://bus-asia-east-1-cimzmgnuu-cdn.sa.metacdn.com/live/ngrp:livestream2022_main_all_transcode/playlist.m3u8"
-},
-{
-  "name": "LoveworldSAT",
-  "desc": "Global Christian satellite channel with live services and teachings.",
-  "url": "https://cdnstack.internetmultimediaonline.org/lwsat/lwsat.stream/index.m3u8"
-},
-{
-  "name": "Maldives TV",
-  "desc": "Tourism, culture, and local programming from the Maldives.",
-  "url": "https://live.maldivestv.mv/hls/stream/index.m3u8"
-},
-{
-  "name": "Max TV",
-  "desc": "General entertainment channel with music and local shows.",
-  "url": "https://tv.qixapps.com/hls/006bea00-06e8-440e-babe-0a588e1138f2.m3u8"
-},
-{
-  "name": "Logo Pluto TV",
-  "desc": "Comedy, sitcoms, and reality shows from the LOGO network.",
-  "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/5ce5a8954311f992edbe1da2/master.m3u8"
-},
-{
-  "name": "LOL Africa",
-  "desc": "African comedy channel featuring stand-up, skits, and sitcoms.",
-  "url": "https://origin3.afxp.telemedia.co.za/PremiumFree/lol/playlist.m3u8"
-},
-{
-  "name": "LOL Network",
-  "desc": "Kevin Hart–curated comedy channel with stand-up and original shows.",
-  "url": "https://aegis-cloudfront-1.tubi.video/54f95462-b44d-4c99-b74b-af49467454fa/playlist.m3u8"
-},
-{
-  "name": "Lone Star",
-  "desc": "Classic western movies and TV series streaming 24/7.",
-  "url": "https://lonestar-rakuten.amagi.tv/playlist.m3u8"
-},
-{
-  "name": "Love & Hip Hop",
-  "desc": "Reality series centered on music, relationships, and celebrity life.",
-  "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/5d51ddf0369acdb278dfb05e/master.m3u8"
-},
-{
-  "name": "Love Boat",
-  "desc": "Classic romantic television series set aboard a luxury cruise ship.",
-  "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/655ca3d1fbc15b00081f1186/master.m3u8"
-},
-{
-  "name": "Lupin the 3rd",
-  "desc": "Classic anime series following the adventures of master thief Lupin III.",
-  "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/60f74ba51c82ac000776c669/master.m3u8"
-},
-{
-  "name": "Mad Dog and Merrill",
-  "desc": "Cooking and grilling show focused on outdoor food and lifestyle.",
-  "url": "https://rpn.bozztv.com/gusa/gusa-mwg/index.m3u8"
-},
-{
-  "name": "Made in Hollywood NZ",
-  "desc": "Entertainment news, red carpet events, and celebrity interviews.",
-  "url": "https://connection3-ent-nz.samsung.wurl.tv/playlist.m3u8"
-},
-{
-  "name": "MagellanTV Now",
-  "desc": "Documentary channel covering history, science, and true stories.",
-  "url": "https://amg00376-magellan-amg00376c5-samsung-au-1708.playouts.now.amagi.tv/playlist/amg00376-magellantv-magellantvnowww-samsungau/playlist.m3u8"
-},
-{
-  "name": "Mashariki TV",
-  "desc": "East African television with Swahili news and entertainment.",
-  "url": "https://goliveafrica.media:9998/live/634adc0806f2b/index.m3u8"
-},
-{
-  "name": "Matlock",
-  "desc": "Classic courtroom drama series starring Andy Griffith.",
-  "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/63da365f60bc8f0008a50f44/master.m3u8"
-},
-{
-  "name": "Maverick Black Cinema",
-  "desc": "Feature films highlighting Black culture and storytellers.",
-  "url": "https://maverick-maverick-black-cinema-3-us.roku.wurl.tv/playlist.m3u8"
-},
-{
-  "name": "MeTV",
-  "desc": "Classic American television shows from the 1950s to 1990s.",
-  "url": "https://fl61.moveonjoy.com/ME_TV/index.m3u8"
-},
-{
-  "name": "Mezzo",
-  "desc": "International classical music, jazz, and opera performances.",
-  "url": "https://viamotionhsi.netplus.ch/live/eds/mezzo/browser-HLS8/mezzo.m3u8"
-},
-{
-  "name": "MHZ",
-  "desc": "International crime, mystery, and detective drama channel.",
-  "url": "https://mhz-samsung-linear-ca.samsung.wurl.tv/playlist.m3u8"
-}
+    "name": "Lolwe TV",
+    "desc": "Local Kenyan television featuring news, culture, and community programming.",
+    "url": "https://goliveafrica.media:9998/live/62580e144eb43/index.m3u8"
+  },
+  {
+    "name": "Mashariki TV",
+    "desc": "Swahili-focused regional TV with news and entertainment content.",
+    "url": "https://goliveafrica.media:9998/live/634adc0806f2b/index.m3u8"
+  },
+  {
+    "name": "MERU TV",
+    "desc": "Community television serving Meru County with local news and programs.",
+    "url": "https://goliveafrica.media:9998/live/628e5c1991061/index.m3u8"
+  },
+  {
+    "name": "Metro Globe Network",
+    "desc": "International news channel offering global and political analysis.",
+    "url": "https://edge.medcom.id/live-edge/smil:mgnch.smil/playlist.m3u8"
+  },
+  {
+    "name": "MagellanTV Now",
+    "desc": "Documentaries covering history, science, crime, and world events.",
+    "url": "https://amg00376-magellan-amg00376c5-samsung-au-1708.playouts.now.amagi.tv/playlist/amg00376-magellantv-magellantvnowww-samsungau/playlist.m3u8"
+  },
+  {
+    "name": "MGM+ Drive-In",
+    "desc": "24/7 movies featuring classics and modern blockbusters.",
+    "url": "https://fl1.moveonjoy.com/EPIX_DRIVE_IN/index.m3u8"
+  },
+  {
+    "name": "MGM+ East",
+    "desc": "Main MGM+ channel with premium movies and original series.",
+    "url": "https://fl1.moveonjoy.com/EPIX/index.m3u8"
+  },
+  {
+    "name": "MGM+ Marquee",
+    "desc": "Curated selection of hit films and MGM originals.",
+    "url": "https://fl1.moveonjoy.com/EPIX_2/index.m3u8"
+  },
+  {
+    "name": "MHZ",
+    "desc": "International crime, mystery, and drama television series.",
+    "url": "https://mhz-samsung-linear-ca.samsung.wurl.tv/playlist.m3u8"
+  },
+  {
+    "name": "MBC FM",
+    "desc": "Arabic music and radio-style entertainment channel.",
+    "url": "https://dbbv9umqcd7cs.cloudfront.net/out/v1/db15b75c3cc0400c91961468d6a232ac/index.m3u8"
+  },
+  {
+    "name": "MBC Loud",
+    "desc": "Youth-focused music channel featuring hip-hop and trending hits.",
+    "url": "https://d2lfa0y84k5bwn.cloudfront.net/out/v1/86dd4506a70c4d7fb35e2ab50296d9a3/index.m3u8"
+  },
+  {
+    "name": "Mezzo",
+    "desc": "Classical music, jazz, opera, and live concert performances.",
+    "url": "https://viamotionhsi.netplus.ch/live/eds/mezzo/browser-HLS8/mezzo.m3u8"
+  },
+  {
+    "name": "Manatee Schools Television",
+    "desc": "Educational programming and school district coverage.",
+    "url": "https://reflect-mcsb-vod.cablecast.tv/live-16/live/live.m3u8"
+  },
+  {
+    "name": "Martin County MCTV",
+    "desc": "Local government meetings and public service announcements.",
+    "url": "https://cdn3.wowza.com/5/UWpORHhLSEs5SkJs/martin/G0074_002/playlist.m3u8"
+  },
+  {
+    "name": "Miami Beach TV",
+    "desc": "City government coverage, tourism, and community information.",
+    "url": "https://edge-f.swagit.com/live/miamibeachfl/live-1-a/playlist.m3u8"
+  },
+  {
+    "name": "Midpen Media Arts",
+    "desc": "Local arts, culture, and lifestyle programming.",
+    "url": "https://5c2974786200d.streamlock.net/live-chan30/ngrp:ch30_all/playlist.m3u8"
+  },
+  {
+    "name": "Midpen Media Diversity",
+    "desc": "Multicultural community programming and local voices.",
+    "url": "https://5c2974786200d.streamlock.net/live-chan75/ngrp:ch75_all/playlist.m3u8"
+  },
+  {
+    "name": "Midpen Media Government",
+    "desc": "Government meetings and public affairs coverage.",
+    "url": "https://5c2974786200d.streamlock.net/live-chan26/ngrp:ch26_all/playlist.m3u8"
+  },
+  {
+    "name": "Madani Channel English",
+    "desc": "Islamic teachings, lectures, and religious discussions.",
+    "url": "https://streaming.madanichannel.tv/static/streaming-playlists/hls/c6a600b0-82cb-454a-8953-2bb2bb372edc/master.m3u8"
+  },
+  {
+    "name": "Maranatha TV",
+    "desc": "Christian worship services and inspirational programming.",
+    "url": "https://media.streambrothers.com:1936/8298/8298/playlist.m3u8"
+  },
+  {
+    "name": "Master’s TV",
+    "desc": "Faith-based television featuring sermons and teachings.",
+    "url": "https://mn-nl.mncdn.com/commectv_live/masterstv/index.m3u8"
+  },
+  {
+    "name": "Mana Church Online",
+    "desc": "Live church services and Christian inspirational content.",
+    "url": "https://w2.manasat.com/church-online/smil:church-online.smil/playlist.m3u8"
+  },
+  {
+    "name": "Lovetoons TV",
+    "desc": "Kids cartoons and family-friendly animation channel.",
+    "url": "https://kali1.everestcast.com:3674/stream/play.m3u8"
+  },
+  {
+    "name": "LTN Family",
+    "desc": "Family-oriented entertainment including dramas and talk shows.",
+    "url": "http://66.102.120.18:8000/play/a04a/index.m3u8"
+  },
+  {
+    "name": "Made in Hollywood",
+    "desc": "Movie news, celebrity interviews, and behind-the-scenes Hollywood content.",
+    "url": "https://connection3-ent-nz.samsung.wurl.tv/playlist.m3u8"
+  },
+  {
+    "name": "Maverick Black Cinema",
+    "desc": "Movies celebrating Black stories, creators, and culture.",
+    "url": "https://maverick-maverick-black-cinema-3-us.roku.wurl.tv/playlist.m3u8"
+  },
+  {
+    "name": "Midnight Pulp",
+    "desc": "Cult movies, horror, anime, and underground cinema.",
+    "url": "https://amg01201-cinedigmenterta-midnightpulp-cineverse-axym1.amagi.tv/playlist/amg01201-cinedigmenterta-midnightpulp-cineverse/playlist.m3u8"
+  },
+  {
+    "name": "Love in Venice",
+    "desc": "Scenic travel channel showcasing Venice culture and city views.",
+    "url": "https://59d7d6f47d7fc.streamlock.net/loveinvenice/loveinvenice/playlist.m3u8"
+  },
+  {
+    "name": "Loupe 4K",
+    "desc": "Ultra-HD art, photography, and museum-style visual experiences.",
+    "url": "https://d2dw21aq0j0l5c.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/LoupeArt-prod/playlist.m3u8"
+  },
+  {
+    "name": "Long Beach Television",
+    "desc": "City council meetings, local news, and civic programming.",
+    "url": "https://edge-f.swagit.com/live/longbeachca/live-3-a/playlist.m3u8"
+  },
+  {
+    "name": "LA Local Channel 36",
+    "desc": "Educational and community television from Los Angeles.",
+    "url": "https://reflect-channel36-la.cablecast.tv/live-3/live/stream-1/live.m3u8"
+  },
+  {
+    "name": "Marin TV Community",
+    "desc": "Community events and local programming from San Rafael, California.",
+    "url": "http://96.68.164.217/live-13/live/live.m3u8"
+  },
+  {
+    "name": "Marin TV Education",
+    "desc": "Educational programs and school-related content.",
+    "url": "http://96.68.164.217/live-15/live/live.m3u8"
+  },
+  {
+    "name": "Marin TV Government",
+    "desc": "Live government meetings and public affairs coverage.",
+    "url": "http://96.68.164.217/live-14/live/live.m3u8"
+  },
+  {
+    "name": "LoveWorld Asia",
+    "desc": "International Christian television from the LoveWorld network.",
+    "url": "https://cdnstack.internetmultimediaonline.org/auxano/Hindilanx/index.m3u8"
+  },
+  {
+    "name": "LoveWorld CASA",
+    "desc": "Spanish-language Christian teaching and worship programming.",
+    "url": "https://j78dp6reyq5r-hls-live.5centscdn.com/kview/5c6d78cffa59e129f040fcec2d788532.sdp/playlist.m3u8"
+  },
+  {
+    "name": "LoveWorld XP",
+    "desc": "Youth-focused Christian lifestyle, music, and talk shows.",
+    "url": "https://bus-asia-east-1-cimzmgnuu-cdn.sa.metacdn.com/live/ngrp:livestream2022_main_all_transcode/playlist.m3u8"
+  },
+  {
+    "name": "LoveworldSAT",
+    "desc": "Global Christian satellite channel with live services and teachings.",
+    "url": "https://cdnstack.internetmultimediaonline.org/lwsat/lwsat.stream/index.m3u8"
+  },
+  {
+    "name": "Maldives TV",
+    "desc": "Tourism, culture, and local programming from the Maldives.",
+    "url": "https://live.maldivestv.mv/hls/stream/index.m3u8"
+  },
+  {
+    "name": "Max TV",
+    "desc": "General entertainment channel with music and local shows.",
+    "url": "https://tv.qixapps.com/hls/006bea00-06e8-440e-babe-0a588e1138f2.m3u8"
+  },
+  {
+    "name": "Logo Pluto TV",
+    "desc": "Comedy, sitcoms, and reality shows from the LOGO network.",
+    "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/5ce5a8954311f992edbe1da2/master.m3u8"
+  },
+  {
+    "name": "LOL Africa",
+    "desc": "African comedy channel featuring stand-up, skits, and sitcoms.",
+    "url": "https://origin3.afxp.telemedia.co.za/PremiumFree/lol/playlist.m3u8"
+  },
+  {
+    "name": "LOL Network",
+    "desc": "Kevin Hart–curated comedy channel with stand-up and original shows.",
+    "url": "https://aegis-cloudfront-1.tubi.video/54f95462-b44d-4c99-b74b-af49467454fa/playlist.m3u8"
+  },
+  {
+    "name": "Lone Star",
+    "desc": "Classic western movies and TV series streaming 24/7.",
+    "url": "https://lonestar-rakuten.amagi.tv/playlist.m3u8"
+  },
+  {
+    "name": "Love & Hip Hop",
+    "desc": "Reality series centered on music, relationships, and celebrity life.",
+    "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/5d51ddf0369acdb278dfb05e/master.m3u8"
+  },
+  {
+    "name": "Love Boat",
+    "desc": "Classic romantic television series set aboard a luxury cruise ship.",
+    "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/655ca3d1fbc15b00081f1186/master.m3u8"
+  },
+  {
+    "name": "Lupin the 3rd",
+    "desc": "Classic anime series following the adventures of master thief Lupin III.",
+    "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/60f74ba51c82ac000776c669/master.m3u8"
+  },
+  {
+    "name": "Mad Dog and Merrill",
+    "desc": "Cooking and grilling show focused on outdoor food and lifestyle.",
+    "url": "https://rpn.bozztv.com/gusa/gusa-mwg/index.m3u8"
+  },
+  {
+    "name": "Made in Hollywood NZ",
+    "desc": "Entertainment news, red carpet events, and celebrity interviews.",
+    "url": "https://connection3-ent-nz.samsung.wurl.tv/playlist.m3u8"
+  },
+  {
+    "name": "MagellanTV Now",
+    "desc": "Documentary channel covering history, science, and true stories.",
+    "url": "https://amg00376-magellan-amg00376c5-samsung-au-1708.playouts.now.amagi.tv/playlist/amg00376-magellantv-magellantvnowww-samsungau/playlist.m3u8"
+  },
+  {
+    "name": "Mashariki TV",
+    "desc": "East African television with Swahili news and entertainment.",
+    "url": "https://goliveafrica.media:9998/live/634adc0806f2b/index.m3u8"
+  },
+  {
+    "name": "Matlock",
+    "desc": "Classic courtroom drama series starring Andy Griffith.",
+    "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/63da365f60bc8f0008a50f44/master.m3u8"
+  },
+  {
+    "name": "Maverick Black Cinema",
+    "desc": "Feature films highlighting Black culture and storytellers.",
+    "url": "https://maverick-maverick-black-cinema-3-us.roku.wurl.tv/playlist.m3u8"
+  },
+  {
+    "name": "MeTV",
+    "desc": "Classic American television shows from the 1950s to 1990s.",
+    "url": "https://fl61.moveonjoy.com/ME_TV/index.m3u8"
+  },
+  {
+    "name": "Mezzo",
+    "desc": "International classical music, jazz, and opera performances.",
+    "url": "https://viamotionhsi.netplus.ch/live/eds/mezzo/browser-HLS8/mezzo.m3u8"
+  },
+  {
+    "name": "MHZ",
+    "desc": "International crime, mystery, and detective drama channel.",
+    "url": "https://mhz-samsung-linear-ca.samsung.wurl.tv/playlist.m3u8"
+  }
 ]
