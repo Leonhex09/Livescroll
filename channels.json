@@ -95,11 +95,6 @@
     "url": "https://maverick-maverick-black-cinema-3-us.roku.wurl.tv/playlist.m3u8"
   },
   {
-    "name": "MERU TV",
-    "desc": "Community television serving Meru County with local news and programs.",
-    "url": "https://goliveafrica.media:9998/live/628e5c1991061/index.m3u8"
-  },
-  {
     "name": "Metro Globe Network",
     "desc": "International news channel offering global and political analysis.",
     "url": "https://edge.medcom.id/live-edge/smil:mgnch.smil/playlist.m3u8"
