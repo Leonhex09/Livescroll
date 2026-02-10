@@ -160,11 +160,6 @@
     "url": "https://streaming.madanichannel.tv/static/streaming-playlists/hls/c6a600b0-82cb-454a-8953-2bb2bb372edc/master.m3u8"
   },
   {
-    "name": "Master’s TV",
-    "desc": "Faith-based television featuring sermons and teachings.",
-    "url": "https://mn-nl.mncdn.com/commectv_live/masterstv/index.m3u8"
-  },
-  {
     "name": "Mana Church Online",
     "desc": "Live church services and Christian inspirational content.",
     "url": "https://w2.manasat.com/church-online/smil:church-online.smil/playlist.m3u8"
