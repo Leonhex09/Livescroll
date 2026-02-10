@@ -185,16 +185,6 @@
     "url": "https://cdnstack.internetmultimediaonline.org/lwsat/lwsat.stream/index.m3u8"
   },
   {
-    "name": "Max TV",
-    "desc": "General entertainment channel with music and local shows.",
-    "url": "https://tv.qixapps.com/hls/006bea00-06e8-440e-babe-0a588e1138f2.m3u8"
-  },
-  {
-    "name": "Logo Pluto TV",
-    "desc": "Comedy, sitcoms, and reality shows from the LOGO network.",
-    "url": "http://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/stitch/hls/channel/5ce5a8954311f992edbe1da2/master.m3u8"
-  },
-  {
     "name": "LOL Africa",
     "desc": "African comedy channel featuring stand-up, skits, and sitcoms.",
     "url": "https://origin3.afxp.telemedia.co.za/PremiumFree/lol/playlist.m3u8"
