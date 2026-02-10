@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Live TV Feed</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* Base styles */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    touch-action: manipulation;
+  }
+
+  .container {
+    height: 100vh;
+    width: 100vw;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Hide scrollbar for cleaner mobile look */
+  .container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .channel {
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: transparent !important;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+  
+  video.playing {
+    opacity: 1;
+  }
+
+  .loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 2;
+  }
+  
+  .loading.show {
+    opacity: 1;
+  }
+  
+  .loading-text {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+    animation: pulse 2s ease-in-out infinite;
+    font-size: 16px;
+    text-align: center;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    color: white;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 5px black;
+    z-index: 2;
+    max-width: calc(100% - 100px);
+  }
+  
+  .live {
+    background: rgba(255, 0, 0, 0.9);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  
+  .name {
+    font-size: 24px;
+    margin-top: 8px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  
+  .desc {
+    opacity: 0.9;
+    font-size: 16px;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* Search bar - Mobile Optimized */
+  .search-bar {
+    position: fixed;
+    top: env(safe-area-inset-top, 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 400px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 12px 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 1;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(100, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .search-bar.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+    pointer-events: none;
+  }
+  
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    width: 100%;
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 4px 0;
+  }
+  
+  .search-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* Mobile Search Float Button */
+  .search-float {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 12px) + 12px);
+    right: 20px;
+    font-size: 22px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 14px;
+    border-radius: 50%;
+    z-index: 1000;
+    display: none;
+    cursor: pointer;
+    color: white;
+    border: 1px solid rgba(100, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .search-float:active {
+    transform: scale(0.95);
+  }
+
+  /* Popup */
+  #popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  
+  #popup > div {
+    background: #111;
+    color: white;
+    padding: 28px;
+    border-radius: 16px;
+    max-width: 320px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(100, 255, 255, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+  
+  .popup-warning { background: #333; color: #fff; }
+  .popup-error   { background: #222; color: #ff4444; }
+
+  /* EPG Overlay - Mobile Optimized */
+  .epg-overlay {
+    position: absolute;
+    bottom: 100px;
+    left: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 20px;
+    border-radius: 16px;
+    color: white;
+    display: none;
+    z-index: 6;
+    border: 1px solid rgba(100, 255, 255, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .epg-overlay.show {
+    display: block;
+  }
+  
+  .epg-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: #0ff;
+    font-weight: 600;
+  }
+  
+  .epg-program {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  
+  .epg-program:last-child {
+    border-bottom: none;
+  }
+  
+  .epg-program.now {
+    background: rgba(0, 255, 255, 0.1);
+    margin: 0 -20px;
+    padding: 12px 20px;
+  }
+  
+  .epg-time {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 4px;
+  }
+  
+  .epg-name {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  /* Vertical Control Bar - Mobile Optimized */
+  .control-column {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 20px 12px;
+    border-radius: 25px;
+    border: 1px solid rgba(100, 255, 255, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .control-column.hidden {
+    transform: translateY(-50%) translateX(calc(100% + 40px));
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .control-column-toggle {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    width: 56px;
+    height: 56px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(100, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0ff;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 99;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .control-column-toggle.hidden {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.8);
+  }
+  
+  .control-column-toggle:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  .control-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+  }
+  
+  .control-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  .control-btn.active {
+    background: rgba(0, 255, 255, 0.3);
+  }
+
+  /* PIP Button */
+  .pip-btn {
+    position: relative;
+  }
+  
+  .pip-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: red;
+    color: white;
+    font-size: 10px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  /* Volume Control - Mobile Optimized */
+  .volume-container {
+    position: relative;
+  }
+  
+  .volume-slider {
+    position: absolute;
+    left: -140px;
+    top: 50%;
+    transform: translateY(-50%) rotate(180deg);
+    width: 120px;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    outline: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    transform-origin: center;
+  }
+  
+  .volume-container:hover .volume-slider {
+    opacity: 1;
+    pointer-events: all;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0ff;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .volume-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0ff;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Theme Switcher */
+  .theme-light {
+    --bg-color: #f5f5f7;
+    --text-color: #1d1d1f;
+    --accent-color: #007aff;
+    --control-bg: rgba(255, 255, 255, 0.9);
+    --sidebar-bg: rgba(255, 255, 255, 0.97);
+    --overlay-bg: rgba(255, 255, 255, 0.95);
+  }
+  
+  .theme-dark {
+    --bg-color: #000000;
+    --text-color: #f5f5f7;
+    --accent-color: #0ff;
+    --control-bg: rgba(0, 0, 0, 0.85);
+    --sidebar-bg: rgba(20, 20, 30, 0.97);
+    --overlay-bg: rgba(0, 0, 0, 0.95);
+  }
+  
+  body {
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease;
+  }
+  
+  body.theme-light .control-column,
+  body.theme-light .control-column-toggle,
+  body.theme-light .search-bar,
+  body.theme-light .search-float {
+    background: var(--control-bg);
+    color: var(--text-color);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  body.theme-light .control-btn {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-color);
+  }
+  
+  body.theme-light .live {
+    background: var(--accent-color);
+  }
+  
+  body.theme-light .volume-slider {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  
+  body.theme-light .volume-slider::-webkit-slider-thumb {
+    background: var(--accent-color);
+  }
+
+  /* Sidebar - Mobile Optimized */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 85%;
+    max-width: 320px;
+    height: 100%;
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    z-index: 2001;
+    padding: calc(env(safe-area-inset-top, 20px) + 20px) 20px 20px;
+    overflow-y: auto;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.3);
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+  
+  .sidebar-header {
+    color: var(--text-color);
+    font-size: 24px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--accent-color);
+    font-weight: 600;
+  }
+  
+  .channel-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    touch-action: manipulation;
+    min-height: 60px;
+  }
+  
+  .channel-item:active {
+    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .channel-item.active {
+    background: rgba(0, 255, 255, 0.15);
+    border-left: 4px solid var(--accent-color);
+  }
+  
+  .channel-item .live-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: red;
+    margin-right: 16px;
+    flex-shrink: 0;
+  }
+  
+  .channel-item .channel-name {
+    flex: 1;
+    font-size: 17px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  
+  .favorite-btn {
+    background: none;
+    border: none;
+    color: gold;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Watch History */
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 15px;
+    touch-action: manipulation;
+  }
+  
+  .history-item:active {
+    transform: scale(0.98);
+  }
+  
+  .history-time {
+    font-size: 13px;
+    color: #aaa;
+    margin-right: 16px;
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+
+  /* Parental Controls */
+  .parental-lock {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: red;
+    font-size: 28px;
+    z-index: 10;
+    display: none;
+  }
+  
+  .parental-pin {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--overlay-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    padding: 32px;
+    border-radius: 20px;
+    z-index: 9999;
+    display: none;
+    text-align: center;
+    width: 85%;
+    max-width: 320px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+  
+  .parental-pin.show {
+    display: block;
+  }
+  
+  .pin-input {
+    width: 100%;
+    padding: 18px;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 24px;
+    letter-spacing: 8px;
+    font-weight: 600;
+    outline: none;
+  }
+
+  /* Stream Info */
+  .stream-info {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 20px) + 70px);
+    right: 20px;
+    background: var(--control-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 16px 20px;
+    border-radius: 16px;
+    color: var(--accent-color);
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    font-size: 13px;
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.3s;
+    border: 1px solid rgba(100, 255, 255, 0.2);
+    max-width: 200px;
+    line-height: 1.6;
+  }
+  
+  .stream-info.show {
+    opacity: 1;
+  }
+
+  /* Sleep Timer */
+  .sleep-timer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--overlay-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    padding: 32px 28px;
+    border-radius: 20px;
+    color: var(--text-color);
+    z-index: 2002;
+    width: 85%;
+    max-width: 320px;
+    border: 1px solid rgba(100, 255, 255, 0.2);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    display: none;
+  }
+  
+  .sleep-timer.show {
+    display: block;
+  }
+  
+  .timer-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 24px 0;
+    justify-content: center;
+  }
+  
+  .timer-btn {
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+    font-weight: 500;
+    flex: 1;
+    min-width: calc(50% - 6px);
+    text-align: center;
+    touch-action: manipulation;
+  }
+  
+  .timer-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Keyboard Shortcuts Help */
+  .shortcuts-help {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--overlay-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    padding: 32px 28px;
+    border-radius: 20px;
+    color: var(--text-color);
+    z-index: 9999;
+    display: none;
+    width: 85%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    max-height: 80vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .shortcuts-help.show {
+    display: block;
+  }
+  
+  .shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 16px;
+  }
+  
+  .shortcut-key {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-family: 'SF Mono', 'Monaco', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* Mobile Bottom Controls - Added for Mobile Accessibility */
+  .mobile-bottom-controls {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom, 20px));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 16px 24px;
+    border-radius: 25px;
+    border: 1px solid rgba(100, 255, 255, 0.3);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    display: none;
+  }
+  
+  .mobile-control-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .mobile-control-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Tap Anywhere to Show Controls Overlay */
+  .tap-to-show {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 90;
+    display: none;
+  }
+
+  /* Notifications */
+  .notification {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 20px) + 80px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 20, 40, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #0ff;
+    padding: 16px 28px;
+    border-radius: 25px;
+    z-index: 9999;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+    max-width: 85%;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    animation: slideInOut 3s ease forwards;
+  }
+  
+  @keyframes slideInOut {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-30px);
+    }
+    15%, 85% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-30px);
+    }
+  }
+
+  /* MOBILE RESPONSIVENESS */
+  
+  /* Tablets and smaller laptops */
+  @media (max-width: 1024px) {
+    .control-column {
+      right: 16px;
+      padding: 16px 10px;
+      gap: 10px;
+    }
+    
+    .control-btn {
+      width: 52px;
+      height: 52px;
+      font-size: 20px;
+    }
+    
+    .control-column-toggle {
+      right: 16px;
+      width: 52px;
+      height: 52px;
+      font-size: 20px;
+    }
+    
+    .volume-slider {
+      left: -130px;
+      width: 110px;
+    }
+    
+    .name {
+      font-size: 22px;
+    }
+    
+    .desc {
+      font-size: 15px;
+    }
+  }
+  
+  /* Mobile phones */
+  @media (max-width: 768px) {
+    .control-column {
+      display: none !important;
+    }
+    
+    .control-column-toggle {
+      display: none !important;
+    }
+    
+    .mobile-bottom-controls {
+      display: flex !important;
+    }
+    
+    .search-bar {
+      width: calc(100% - 40px);
+      top: env(safe-area-inset-top, 12px);
+    }
+    
+    .search-float {
+      top: calc(env(safe-area-inset-top, 12px) + 12px);
+      right: 16px;
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+    
+    .overlay {
+      bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+      left: 16px;
+      max-width: calc(100% - 32px);
+    }
+    
+    .name {
+      font-size: 20px;
+    }
+    
+    .desc {
+      font-size: 14px;
+    }
+    
+    .live {
+      padding: 5px 12px;
+      font-size: 13px;
+    }
+    
+    .stream-info {
+      top: calc(env(safe-area-inset-top, 20px) + 60px);
+      right: 16px;
+      font-size: 12px;
+      padding: 14px 16px;
+      max-width: 180px;
+    }
+    
+    .epg-overlay {
+      bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+      left: 16px;
+      right: 16px;
+      max-height: 50vh;
+    }
+    
+    .sidebar {
+      width: 85%;
+      max-width: 300px;
+      padding: calc(env(safe-area-inset-top, 20px) + 16px) 16px 16px;
+    }
+    
+    .channel-item {
+      padding: 14px;
+      min-height: 56px;
+    }
+    
+    .channel-item .channel-name {
+      font-size: 16px;
+    }
+    
+    .history-item {
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+  }
+  
+  /* Small phones */
+  @media (max-width: 480px) {
+    .mobile-bottom-controls {
+      gap: 16px;
+      padding: 14px 20px;
+    }
+    
+    .mobile-control-btn {
+      width: 52px;
+      height: 52px;
+      font-size: 22px;
+    }
+    
+    .overlay {
+      bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .name {
+      font-size: 18px;
+    }
+    
+    .desc {
+      font-size: 13px;
+    }
+    
+    .live {
+      font-size: 12px;
+      padding: 4px 10px;
+    }
+    
+    .search-bar {
+      padding: 10px 16px;
+    }
+    
+    .search-bar input {
+      font-size: 15px;
+    }
+    
+    .epg-overlay {
+      bottom: calc(130px + env(safe-area-inset-bottom, 0px));
+      padding: 16px;
+    }
+    
+    .epg-title {
+      font-size: 18px;
+    }
+    
+    .epg-name {
+      font-size: 15px;
+    }
+    
+    .timer-btn {
+      padding: 12px 16px;
+      font-size: 15px;
+    }
+    
+    .shortcut-item {
+      font-size: 15px;
+      padding: 12px 0;
+    }
+    
+    .shortcut-key {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+  }
+  
+  /* Very small phones */
+  @media (max-width: 360px) {
+    .mobile-bottom-controls {
+      gap: 12px;
+      padding: 12px 16px;
+    }
+    
+    .mobile-control-btn {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+    
+    .name {
+      font-size: 17px;
+    }
+    
+    .desc {
+      font-size: 12px;
+    }
+    
+    .overlay {
+      left: 12px;
+      max-width: calc(100% - 24px);
+    }
+    
+    .search-float {
+      width: 44px;
+      height: 44px;
+      font-size: 18px;
+      right: 12px;
+    }
+    
+    .stream-info {
+      right: 12px;
+      font-size: 11px;
+      padding: 12px 14px;
+      max-width: 160px;
+    }
+  }
+  
+  /* Landscape orientation */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .overlay {
+      bottom: 60px;
+    }
+    
+    .epg-overlay {
+      bottom: 80px;
+      max-height: 40vh;
+    }
+    
+    .mobile-bottom-controls {
+      bottom: 12px;
+      padding: 12px 20px;
+    }
+    
+    .name {
+      font-size: 18px;
+    }
+    
+    .desc {
+      font-size: 13px;
+    }
+  }
+  
+  /* Dark mode preference */
+  @media (prefers-color-scheme: dark) {
+    body:not(.theme-light) {
+      color-scheme: dark;
+    }
+  }
+  
+  @media (prefers-color-scheme: light) {
+    body:not(.theme-dark) {
+      color-scheme: light;
+    }
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .control-btn,
+    .mobile-control-btn,
+    .timer-btn {
+      border: 2px solid currentColor;
+    }
+    
+    .channel-item.active {
+      border: 2px solid var(--accent-color);
+    }
+  }
+  
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .container {
+      scroll-behavior: auto;
+    }
+  }
+</style>
+</head>
+<body class="theme-dark">
+
+<!-- Popup -->
+<div id="popup">
+  <div>
+    <h2 id="pTitle" style="margin-top:0;"></h2>
+    <p id="pText" style="opacity:.9;"></p>
+    <button id="pBtn" style="margin-top:14px;padding:10px 24px;background:#0ff;color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;">Close</button>
+  </div>
+</div>
+
+<!-- Parental PIN Input -->
+<div class="parental-pin" id="parentalPin">
+  <h3 style="margin-top:0;color:var(--text-color);">Parental Control</h3>
+  <p style="color:#aaa;font-size:14px;">Enter PIN to access this channel</p>
+  <input type="password" class="pin-input" id="pinInput" maxlength="4" placeholder="0000">
+  <div style="display:flex;gap:10px;margin-top:20px;">
+    <button class="timer-btn" id="pinSubmit" style="flex:1;">Submit</button>
+    <button class="timer-btn" id="pinCancel" style="background:rgba(255,50,50,0.7);">Cancel</button>
+  </div>
+</div>
+
+<!-- Keyboard Shortcuts Help -->
+<div class="shortcuts-help" id="shortcutsHelp">
+  <h3 style="margin-top:0;color:var(--accent-color);">Keyboard Shortcuts</h3>
+  <div class="shortcut-item">
+    <span>Play/Pause</span>
+    <span class="shortcut-key">Space / K</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Next Channel</span>
+    <span class="shortcut-key">↓ or →</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Previous Channel</span>
+    <span class="shortcut-key">↑ or ←</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Volume Up</span>
+    <span class="shortcut-key">Shift + ↑</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Volume Down</span>
+    <span class="shortcut-key">Shift + ↓</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Fullscreen</span>
+    <span class="shortcut-key">F</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Toggle Mute</span>
+    <span class="shortcut-key">M</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Toggle Controls</span>
+    <span class="shortcut-key">C</span>
+  </div>
+  <div class="shortcut-item">
+    <span>Show Shortcuts</span>
+    <span class="shortcut-key">?</span>
+  </div>
+  <button class="timer-btn" id="closeShortcuts" style="margin-top:20px;width:100%;">Close</button>
+</div>
+
+<!-- Search bar -->
+<div class="search-bar" id="searchBar">
+  🔍
+  <input id="searchInput" placeholder="Search channels..." inputmode="search">
+</div>
+
+<div class="search-float" id="searchFloat">🔎</div>
+
+<!-- Control Column Toggle Button -->
+<div class="control-column-toggle" id="controlToggle">
+  <i class="fas fa-chevron-left"></i>
+</div>
+
+<!-- Vertical Control Column -->
+<div class="control-column" id="controlColumn">
+  <div class="volume-container">
+    <button class="control-btn" id="volumeBtn" title="Volume">
+      <i class="fas fa-volume-up"></i>
+    </button>
+    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+  </div>
+  
+  <!-- Theme Toggle -->
+  <button class="control-btn" id="themeBtn" title="Toggle Theme">
+    <i class="fas fa-moon"></i>
+  </button>
+  
+  <!-- PIP Button -->
+  <button class="control-btn pip-btn" id="pipBtn" title="Picture-in-Picture">
+    <i class="fas fa-picture-in-picture"></i>
+    <div class="pip-badge" id="pipBadge" style="display:none;">PIP</div>
+  </button>
+  
+  <!-- EPG Button -->
+  <button class="control-btn" id="epgBtn" title="Program Guide">
+    <i class="fas fa-tv"></i>
+  </button>
+  
+  <!-- Shortcuts Help -->
+  <button class="control-btn" id="shortcutsBtn" title="Keyboard Shortcuts">
+    <i class="fas fa-keyboard"></i>
+  </button>
+  
+  <button class="control-btn" id="shareBtn" title="Share Channel">
+    <i class="fas fa-share-alt"></i>
+  </button>
+  
+  <button class="control-btn" id="favoriteBtn" title="Add to Favorites">
+    <i class="far fa-star"></i>
+  </button>
+  
+  <button class="control-btn" id="sidebarBtn" title="Channel List">
+    <i class="fas fa-bars"></i>
+  </button>
+</div>
+
+<!-- Mobile Bottom Controls -->
+<div class="mobile-bottom-controls" id="mobileControls">
+  <button class="mobile-control-btn" id="mobileVolumeBtn" title="Volume">
+    <i class="fas fa-volume-up"></i>
+  </button>
+  <button class="mobile-control-btn" id="mobilePlayBtn" title="Play/Pause">
+    <i class="fas fa-play"></i>
+  </button>
+  <button class="mobile-control-btn" id="mobilePrevBtn" title="Previous Channel">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+  <button class="mobile-control-btn" id="mobileNextBtn" title="Next Channel">
+    <i class="fas fa-chevron-down"></i>
+  </button>
+  <button class="mobile-control-btn" id="mobileMenuBtn" title="Menu">
+    <i class="fas fa-ellipsis-h"></i>
+  </button>
+</div>
+
+<!-- EPG Overlay -->
+<div class="epg-overlay" id="epgOverlay">
+  <div class="epg-title">Now & Next</div>
+  <div id="epgContent">
+    <!-- EPG content will be loaded here -->
+  </div>
+</div>
+
+<!-- Stream Info -->
+<div class="stream-info" id="streamInfo">
+  <div>Bitrate: <span id="bitrate">--</span></div>
+  <div>Resolution: <span id="resolution">--</span></div>
+  <div>Buffer: <span id="buffer">--</span></div>
+  <div>FPS: <span id="fps">--</span></div>
+  <div>Quality: <span id="qualityLevel">Auto</span></div>
+</div>
+
+<!-- Sleep Timer Panel -->
+<div class="sleep-timer" id="sleepTimer">
+  <h3 style="margin-top:0;text-align:center;">Sleep Timer</h3>
+  <div class="timer-options">
+    <button class="timer-btn" data-minutes="5">5 min</button>
+    <button class="timer-btn" data-minutes="15">15 min</button>
+    <button class="timer-btn" data-minutes="30">30 min</button>
+    <button class="timer-btn" data-minutes="60">60 min</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:15px;">
+    <input type="number" id="customTimer" placeholder="Custom minutes" inputmode="numeric" pattern="[0-9]*" style="flex:1;padding:8px;border-radius:6px;border:none;background:rgba(255,255,255,0.1);color:var(--text-color);">
+    <button class="timer-btn" id="setCustomTimer">Set</button>
+  </div>
+  <div style="text-align:center;margin-top:20px;">
+    <button class="timer-btn" id="cancelTimer" style="background:rgba(255,50,50,0.7);">Cancel Timer</button>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <i class="fas fa-satellite-dish" style="margin-right:8px;"></i>
+    Channels
+  </div>
+  <div id="channelList"></div>
+  
+  <!-- Watch History Section -->
+  <div style="margin-top:30px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.1);">
+    <div class="sidebar-header" style="font-size:16px;margin-bottom:10px;">
+      <i class="fas fa-history" style="margin-right:8px;"></i>
+      Recently Watched
+    </div>
+    <div id="watchHistory">
+      <!-- Watch history will be loaded here -->
+    </div>
+  </div>
+</div>
+
+<!-- Tap Anywhere Overlay (for showing controls) -->
+<div class="tap-to-show" id="tapToShow"></div>
+
+<!-- Main Content -->
+<div class="container" id="feed"></div>
+
+<script>
+// Global variables
+const feed = document.getElementById('feed');
+let channels = [];
+let activeVideo = null;
+let activeChannelIndex = 0;
+let favorites = JSON.parse(localStorage.getItem('tvFavorites')) || [];
+let sleepTimer = null;
+let watchHistory = JSON.parse(localStorage.getItem('tvWatchHistory')) || [];
+let parentalPIN = localStorage.getItem('tvParentalPIN') || '0000';
+let currentTheme = localStorage.getItem('tvTheme') || 'dark';
+let isPipActive = false;
+let controlsHidden = false;
+let hideControlsTimeout = null;
+
+// HLS config optimized for mobile
+const hlsConfig = {
+  lowLatencyMode: true,
+  liveSyncDurationCount: 3,
+  liveMaxLatencyDurationCount: 5,
+  maxBufferLength: 15,
+  backBufferLength: 8,
+  enableWorker: true,
+  maxBufferSize: 60 * 1000 * 1000, // 60MB
+  maxBufferHole: 0.5,
+  maxFragLookUpTolerance: 0.25,
+  liveDurationInfinity: true,
+  maxMaxBufferLength: 30,
+  startFragPrefetch: true,
+  enableCEA708Captions: true,
+  fragLoadingTimeOut: 20000,
+  manifestLoadingTimeOut: 10000,
+  levelLoadingTimeOut: 10000,
+  fpsDroppedMonitoringPeriod: 5000,
+  fpsDroppedMonitoringThreshold: 0.2
+};
+
+// Initialize theme
+function initTheme() {
+  document.body.className = `theme-${currentTheme}`;
+  const themeBtn = document.getElementById('themeBtn');
+  themeBtn.innerHTML = currentTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+  
+  // Update mobile theme button if exists
+  const mobileThemeBtn = document.getElementById('mobileThemeBtn');
+  if (mobileThemeBtn) {
+    mobileThemeBtn.innerHTML = currentTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+  }
+}
+
+// Toggle theme
+function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('tvTheme', currentTheme);
+  initTheme();
+}
+
+// Add to watch history
+function addToHistory(channelIndex) {
+  const channel = channels[channelIndex];
+  const historyItem = {
+    channel: channel.name,
+    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+    index: channelIndex,
+    timestamp: Date.now()
+  };
+  
+  // Remove duplicates and keep only last 10
+  watchHistory = watchHistory.filter(item => item.channel !== channel.name);
+  watchHistory.unshift(historyItem);
+  watchHistory = watchHistory.slice(0, 10);
+  
+  localStorage.setItem('tvWatchHistory', JSON.stringify(watchHistory));
+  updateWatchHistory();
+}
+
+// Update watch history sidebar
+function updateWatchHistory() {
+  const historyContainer = document.getElementById('watchHistory');
+  historyContainer.innerHTML = '';
+  
+  if (watchHistory.length === 0) {
+    historyContainer.innerHTML = '<div style="text-align:center;color:#aaa;padding:10px;">No recent channels</div>';
+    return;
+  }
+  
+  watchHistory.forEach(item => {
+    const historyEl = document.createElement('div');
+    historyEl.className = 'history-item';
+    historyEl.innerHTML = `
+      <div class="history-time">${item.time}</div>
+      <div class="channel-name">${item.channel}</div>
+    `;
+    
+    historyEl.addEventListener('click', () => {
+      const sections = feed.querySelectorAll('.channel');
+      if (sections[item.index]) {
+        sections[item.index].scrollIntoView({ behavior: 'smooth' });
+        toggleSidebar();
+      }
+    });
+    
+    historyContainer.appendChild(historyEl);
+  });
+}
+
+// Load EPG data for channel
+async function loadEPG(channelIndex) {
+  const channel = channels[channelIndex];
+  if (!channel.epg) return;
+  
+  try {
+    const response = await fetch(channel.epg);
+    const epgData = await response.json();
+    displayEPG(epgData);
+  } catch (error) {
+    console.error('Failed to load EPG:', error);
+    showNotification('EPG data not available');
+  }
+}
+
+// Display EPG overlay
+function displayEPG(epgData) {
+  const epgContent = document.getElementById('epgContent');
+  epgContent.innerHTML = '';
+  
+  epgData.programs.slice(0, 5).forEach(program => {
+    const programEl = document.createElement('div');
+    programEl.className = `epg-program ${program.now ? 'now' : ''}`;
+    programEl.innerHTML = `
+      <div class="epg-time">${program.time}</div>
+      <div class="epg-name">${program.name}</div>
+    `;
+    epgContent.appendChild(programEl);
+  });
+  
+  document.getElementById('epgOverlay').classList.add('show');
+  
+  // Auto-hide EPG after 10 seconds
+  setTimeout(() => {
+    document.getElementById('epgOverlay').classList.remove('show');
+  }, 10000);
+}
+
+// Toggle Picture-in-Picture
+async function togglePip() {
+  if (!activeVideo) return;
+  
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      document.getElementById('pipBadge').style.display = 'none';
+      isPipActive = false;
+    } else if (document.pictureInPictureEnabled) {
+      await activeVideo.requestPictureInPicture();
+      document.getElementById('pipBadge').style.display = 'flex';
+      isPipActive = true;
+      
+      // Add event listener for PIP close
+      activeVideo.addEventListener('leavepictureinpicture', () => {
+        document.getElementById('pipBadge').style.display = 'none';
+        isPipActive = false;
+      });
+    }
+  } catch (error) {
+    console.error('PIP error:', error);
+    showNotification('PIP not supported');
+  }
+}
+
+// Parental control check
+function checkParentalControl(channelIndex) {
+  const channel = channels[channelIndex];
+  if (channel.parental && channel.parental === 'locked') {
+    document.getElementById('parentalPin').classList.add('show');
+    return false;
+  }
+  return true;
+}
+
+// Toggle controls visibility
+function toggleControls() {
+  const controlColumn = document.getElementById('controlColumn');
+  const controlToggle = document.getElementById('controlToggle');
+  const mobileControls = document.getElementById('mobileControls');
+  
+  if (controlsHidden) {
+    // Show controls
+    controlColumn.classList.remove('hidden');
+    controlToggle.classList.add('hidden');
+    if (mobileControls) mobileControls.style.opacity = '1';
+    controlsHidden = false;
+    
+    // Auto-hide after 5 seconds
+    clearTimeout(hideControlsTimeout);
+    hideControlsTimeout = setTimeout(() => {
+      hideControls();
+    }, 5000);
+  } else {
+    // Hide controls
+    hideControls();
+  }
+}
+
+// Hide controls
+function hideControls() {
+  const controlColumn = document.getElementById('controlColumn');
+  const controlToggle = document.getElementById('controlToggle');
+  const mobileControls = document.getElementById('mobileControls');
+  
+  controlColumn.classList.add('hidden');
+  controlToggle.classList.remove('hidden');
+  if (mobileControls) mobileControls.style.opacity = '0.3';
+  controlsHidden = true;
+}
+
+// Show controls temporarily
+function showControlsTemporarily() {
+  const controlColumn = document.getElementById('controlColumn');
+  const controlToggle = document.getElementById('controlToggle');
+  const mobileControls = document.getElementById('mobileControls');
+  
+  if (controlsHidden) {
+    controlColumn.classList.remove('hidden');
+    controlToggle.classList.add('hidden');
+    if (mobileControls) mobileControls.style.opacity = '1';
+    controlsHidden = false;
+  }
+  
+  // Reset auto-hide timer
+  clearTimeout(hideControlsTimeout);
+  hideControlsTimeout = setTimeout(() => {
+    hideControls();
+  }, 5000);
+}
+
+// Initialize keyboard shortcuts
+function initKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    // Ignore if user is typing in input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    
+    switch(e.key.toLowerCase()) {
+      case ' ':
+      case 'k':
+        e.preventDefault();
+        if (activeVideo) {
+          if (activeVideo.paused) {
+            activeVideo.play();
+            updateMobilePlayButton(true);
+          } else {
+            activeVideo.pause();
+            updateMobilePlayButton(false);
+          }
+        }
+        break;
+        
+      case 'arrowdown':
+      case 'arrowright':
+        e.preventDefault();
+        if (!e.shiftKey) {
+          // Next channel
+          const nextIndex = Math.min(activeChannelIndex + 1, channels.length - 1);
+          const sections = feed.querySelectorAll('.channel');
+          if (sections[nextIndex]) {
+            sections[nextIndex].scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          // Volume down
+          if (activeVideo && activeVideo.volume > 0) {
+            activeVideo.volume = Math.max(0, activeVideo.volume - 0.1);
+            document.getElementById('volumeSlider').value = activeVideo.volume;
+            updateVolumeButton();
+          }
+        }
+        break;
+        
+      case 'arrowup':
+      case 'arrowleft':
+        e.preventDefault();
+        if (!e.shiftKey) {
+          // Previous channel
+          const prevIndex = Math.max(activeChannelIndex - 1, 0);
+          const sections = feed.querySelectorAll('.channel');
+          if (sections[prevIndex]) {
+            sections[prevIndex].scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          // Volume up
+          if (activeVideo && activeVideo.volume < 1) {
+            activeVideo.volume = Math.min(1, activeVideo.volume + 0.1);
+            document.getElementById('volumeSlider').value = activeVideo.volume;
+            updateVolumeButton();
+          }
+        }
+        break;
+        
+      case 'f':
+        e.preventDefault();
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(console.log);
+        } else {
+          document.exitFullscreen().catch(console.log);
+        }
+        break;
+        
+      case 'm':
+        e.preventDefault();
+        if (activeVideo) {
+          activeVideo.muted = !activeVideo.muted;
+          updateVolumeButton();
+        }
+        break;
+        
+      case 'c':
+        e.preventDefault();
+        toggleControls();
+        break;
+        
+      case '?':
+        e.preventDefault();
+        document.getElementById('shortcutsHelp').classList.add('show');
+        break;
+    }
+  });
+}
+
+// Update mobile play button state
+function updateMobilePlayButton(isPlaying) {
+  const mobilePlayBtn = document.getElementById('mobilePlayBtn');
+  if (mobilePlayBtn) {
+    mobilePlayBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+  }
+}
+
+// Update volume button state
+function updateVolumeButton() {
+  const volumeBtn = document.getElementById('volumeBtn');
+  const mobileVolumeBtn = document.getElementById('mobileVolumeBtn');
+  const volume = activeVideo ? activeVideo.volume : 1;
+  const isMuted = activeVideo ? activeVideo.muted : false;
+  
+  if (isMuted || volume === 0) {
+    volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+    if (mobileVolumeBtn) mobileVolumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+  } else if (volume < 0.5) {
+    volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+    if (mobileVolumeBtn) mobileVolumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+  } else {
+    volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+    if (mobileVolumeBtn) mobileVolumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+  }
+}
+
+// Intersection Observer with mobile optimizations
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    const section = entry.target;
+    const video = section.querySelector('video');
+    const loading = section.querySelector('.loading');
+    let hls = section._hls;
+
+    if (entry.intersectionRatio >= 0.3) {
+      loading.classList.add('show');
+
+      if (!hls && video.dataset.url) {
+        if (Hls.isSupported()) {
+          hls = new Hls(hlsConfig);
+          hls.loadSource(video.dataset.url);
+          hls.attachMedia(video);
+          section._hls = hls;
+
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {
+              // Auto-play might be blocked, show play button
+              loading.innerHTML = '<div><i class="fas fa-play" style="font-size:40px;margin-bottom:10px;"></i><br>Tap to play</div>';
+              loading.style.cursor = 'pointer';
+              loading.onclick = () => video.play();
+            });
+          });
+
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+              console.error('HLS fatal error:', data);
+              loading.innerHTML = '<div>Stream error<br>Try scrolling away and back</div>';
+            }
+          });
+
+          // Stream info updates
+          hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
+            updateStreamInfo(hls, video);
+          });
+          
+          // Adaptive bitrate monitoring
+          hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+            updateQualityLevel(hls);
+          });
+          
+          // Network optimization for mobile
+          hls.on(Hls.Events.BUFFER_CREATED, () => {
+            if ('connection' in navigator) {
+              const connection = navigator.connection;
+              if (connection.saveData || connection.effectiveType === '2g' || connection.effectiveType === '3g') {
+                hls.currentLevel = -1; // Auto quality
+              }
+            }
+          });
+        } else {
+          video.src = video.dataset.url;
+          video.load();
+          video.play().catch(() => {
+            loading.innerHTML = '<div><i class="fas fa-play" style="font-size:40px;margin-bottom:10px;"></i><br>Tap to play</div>';
+            loading.style.cursor = 'pointer';
+            loading.onclick = () => video.play();
+          });
+        }
+      } else if (hls) {
+        hls.startLoad();
+      }
+
+      video.onplaying = () => {
+        video.classList.add('playing');
+        loading.classList.remove('show');
+        updateActiveChannel(section);
+        updateMobilePlayButton(true);
+        
+        // Add to watch history
+        const channelIndex = Array.from(feed.children).indexOf(section);
+        addToHistory(channelIndex);
+      };
+      
+      video.onpause = () => {
+        video.classList.remove('playing');
+        updateMobilePlayButton(false);
+      };
+      
+      video.onwaiting = () => loading.classList.add('show');
+      video.onerror = () => {
+        loading.innerHTML = '<div>Failed to load stream<br><small>Check connection</small></div>';
+      };
+
+      if (entry.intersectionRatio >= 0.85) {
+        if (video !== activeVideo) {
+          activeVideo = video;
+          document.querySelectorAll('video').forEach(v => {
+            if (v === video) {
+              v.muted = false;
+              v.volume = parseFloat(localStorage.getItem('tvVolume') || '1');
+              v.play().then(() => {
+                v.classList.add('playing');
+                loading.classList.remove('show');
+                updateMobilePlayButton(true);
+              }).catch(() => {
+                loading.innerHTML = '<div><i class="fas fa-play" style="font-size:40px;margin-bottom:10px;"></i><br>Tap to play</div>';
+                loading.style.cursor = 'pointer';
+                loading.onclick = () => v.play();
+              });
+            } else {
+              v.pause();
+              v.muted = true;
+              v.classList.remove('playing');
+            }
+          });
+        }
+      }
+    } else {
+      if (hls) hls.stopLoad();
+      video.pause();
+      video.classList.remove('playing');
+      if (video === activeVideo) {
+        activeVideo = null;
+      }
+      loading.classList.remove('show');
+    }
+  });
+}, { 
+  threshold: [0, 0.3, 0.85],
+  rootMargin: '50px'
+});
+
+// Update active channel info
+function updateActiveChannel(section) {
+  const channelIndex = Array.from(feed.children).indexOf(section);
+  activeChannelIndex = channelIndex;
+  
+  // Update sidebar active state
+  document.querySelectorAll('.channel-item').forEach((item, idx) => {
+    item.classList.toggle('active', idx === channelIndex);
+  });
+  
+  // Update favorite button
+  const channel = channels[channelIndex];
+  const favoriteBtn = document.getElementById('favoriteBtn');
+  const isFavorite = favorites.some(fav => fav.url === channel.url);
+  favoriteBtn.innerHTML = isFavorite ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+  
+  // Update mobile favorite button if exists
+  const mobileFavoriteBtn = document.getElementById('mobileFavoriteBtn');
+  if (mobileFavoriteBtn) {
+    mobileFavoriteBtn.innerHTML = isFavorite ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+  }
+  
+  // Check parental control
+  const lockIcon = section.querySelector('.parental-lock');
+  if (channel.parental === 'locked') {
+    if (!lockIcon) {
+      const lock = document.createElement('div');
+      lock.className = 'parental-lock';
+      lock.innerHTML = '<i class="fas fa-lock"></i>';
+      lock.style.display = 'block';
+      section.appendChild(lock);
+    }
+  } else if (lockIcon) {
+    lockIcon.remove();
+  }
+}
+
+// Update stream info display
+function updateStreamInfo(hls, video) {
+  if (!hls) return;
+  
+  const bitrate = hls.levels[hls.currentLevel]?.bitrate || 0;
+  const resolution = hls.levels[hls.currentLevel]?.height || 0;
+  const buffered = video.buffered.length > 0 ? video.buffered.end(0) - video.buffered.start(0) : 0;
+  
+  document.getElementById('bitrate').textContent = bitrate ? Math.round(bitrate / 1000) + ' kbps' : '--';
+  document.getElementById('resolution').textContent = resolution ? resolution + 'p' : '--';
+  document.getElementById('buffer').textContent = buffered.toFixed(1) + 's';
+  
+  // Estimate FPS
+  if (!video._lastTime) {
+    video._lastTime = video.currentTime;
+    video._frameCount = 0;
+    setTimeout(() => {
+      const elapsed = video.currentTime - video._lastTime;
+      const fps = video._frameCount / elapsed;
+      document.getElementById('fps').textContent = fps.toFixed(1);
+      video._lastTime = video._frameCount = 0;
+    }, 1000);
+  }
+  video._frameCount++;
+}
+
+// Update quality level display
+function updateQualityLevel(hls) {
+  const currentLevel = hls.currentLevel;
+  const levels = hls.levels;
+  
+  if (currentLevel >= 0 && levels[currentLevel]) {
+    const height = levels[currentLevel].height;
+    const bitrate = Math.round(levels[currentLevel].bitrate / 1000);
+    document.getElementById('qualityLevel').textContent = `${height}p (${bitrate}kbps)`;
+  } else {
+    document.getElementById('qualityLevel').textContent = 'Auto';
+  }
+}
+
+// Render channels with mobile optimizations
+function render(list) {
+  feed.innerHTML = '';
+  activeVideo = null;
+
+  list.forEach((c, idx) => {
+    const section = document.createElement('section');
+    section.className = 'channel';
+    section.id = `channel-${idx}`;
+    section.innerHTML = `
+      <video playsinline webkit-playsinline data-url="${c.url}" poster="${c.poster || ''}" preload="metadata"></video>
+      <div class="loading">
+        <div class="loading-text">Loading...</div>
+      </div>
+      <div class="overlay">
+        <span class="live">LIVE</span>
+        <div class="name">${c.name}</div>
+        <div class="desc">${c.desc}</div>
+      </div>`;
+    feed.appendChild(section);
+
+    section._hls = null;
+    observer.observe(section);
+  });
+
+  // Update sidebar
+  updateSidebar(list);
+}
+
+// Update sidebar channel list
+function updateSidebar(list) {
+  const channelList = document.getElementById('channelList');
+  channelList.innerHTML = '';
+  
+  list.forEach((channel, idx) => {
+    const isFavorite = favorites.some(fav => fav.url === channel.url);
+    const item = document.createElement('div');
+    item.className = `channel-item ${idx === activeChannelIndex ? 'active' : ''}`;
+    item.innerHTML = `
+      <div class="live-indicator"></div>
+      <div class="channel-name">${channel.name}</div>
+      <button class="favorite-btn" data-index="${idx}">
+        <i class="${isFavorite ? 'fas' : 'far'} fa-star"></i>
+      </button>
+    `;
+    
+    item.addEventListener('click', () => {
+      if (checkParentalControl(idx)) {
+        const sections = feed.querySelectorAll('.channel');
+        if (sections[idx]) {
+          sections[idx].scrollIntoView({ behavior: 'smooth' });
+          toggleSidebar();
+        }
+      }
+    });
+    
+    channelList.appendChild(item);
+  });
+  
+  // Add favorite button listeners
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.index);
+      toggleFavorite(idx);
+    });
+  });
+}
+
+// Toggle favorite
+function toggleFavorite(index) {
+  const channel = channels[index];
+  const favoriteIndex = favorites.findIndex(fav => fav.url === channel.url);
+  
+  if (favoriteIndex === -1) {
+    favorites.push(channel);
+  } else {
+    favorites.splice(favoriteIndex, 1);
+  }
+  
+  localStorage.setItem('tvFavorites', JSON.stringify(favorites));
+  updateSidebar(channels);
+  
+  // Update favorite button if this is the active channel
+  if (index === activeChannelIndex) {
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    favoriteBtn.innerHTML = favoriteIndex === -1 ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+  }
+}
+
+// Toggle sidebar
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('open');
+  
+  // Hide controls when sidebar is open on mobile
+  if (window.innerWidth <= 768) {
+    hideControls();
+  }
+}
+
+// Initialize mobile controls
+function initMobileControls() {
+  const mobileControls = document.getElementById('mobileControls');
+  if (!mobileControls) return;
+  
+  // Volume button
+  document.getElementById('mobileVolumeBtn').addEventListener('click', () => {
+    if (activeVideo) {
+      if (activeVideo.volume > 0) {
+        activeVideo.volume = 0;
+        activeVideo.muted = true;
+      } else {
+        activeVideo.volume = parseFloat(localStorage.getItem('tvVolume') || '1');
+        activeVideo.muted = false;
+      }
+      updateVolumeButton();
+    }
+  });
+  
+  // Play/Pause button
+  document.getElementById('mobilePlayBtn').addEventListener('click', () => {
+    if (activeVideo) {
+      if (activeVideo.paused) {
+        activeVideo.play();
+        updateMobilePlayButton(true);
+      } else {
+        activeVideo.pause();
+        updateMobilePlayButton(false);
+      }
+    }
+  });
+  
+  // Previous channel button
+  document.getElementById('mobilePrevBtn').addEventListener('click', () => {
+    const prevIndex = Math.max(activeChannelIndex - 1, 0);
+    const sections = feed.querySelectorAll('.channel');
+    if (sections[prevIndex]) {
+      sections[prevIndex].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+  
+  // Next channel button
+  document.getElementById('mobileNextBtn').addEventListener('click', () => {
+    const nextIndex = Math.min(activeChannelIndex + 1, channels.length - 1);
+    const sections = feed.querySelectorAll('.channel');
+    if (sections[nextIndex]) {
+      sections[nextIndex].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+  
+  // Menu button
+  document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+    showControlsTemporarily();
+    // Create and show mobile menu
+    const mobileMenu = document.createElement('div');
+    mobileMenu.style.cssText = `
+      position: fixed;
+      bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(30px);
+      border-radius: 20px;
+      padding: 16px;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 200px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    `;
+    
+    const menuItems = [
+      { icon: 'fa-star', text: 'Favorites', action: () => toggleFavorite(activeChannelIndex) },
+      { icon: 'fa-share-alt', text: 'Share', action: shareChannel },
+      { icon: 'fa-tv', text: 'Program Guide', action: () => loadEPG(activeChannelIndex) },
+      { icon: 'fa-moon', text: 'Toggle Theme', action: toggleTheme },
+      { icon: 'fa-info-circle', text: 'Stream Info', action: () => document.getElementById('streamInfo').classList.toggle('show') }
+    ];
+    
+    menuItems.forEach(item => {
+      const btn = document.createElement('button');
+      btn.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        text-align: left;
+      `;
+      btn.innerHTML = `<i class="fas ${item.icon}"></i><span>${item.text}</span>`;
+      btn.addEventListener('click', () => {
+        item.action();
+        mobileMenu.remove();
+      });
+      mobileMenu.appendChild(btn);
+    });
+    
+    document.body.appendChild(mobileMenu);
+    
+    // Close menu when clicking outside
+    setTimeout(() => {
+      const closeMenu = (e) => {
+        if (!mobileMenu.contains(e.target) && e.target.id !== 'mobileMenuBtn') {
+          mobileMenu.remove();
+          document.removeEventListener('click', closeMenu);
+        }
+      };
+      document.addEventListener('click', closeMenu);
+    }, 100);
+  });
+}
+
+// Share channel function
+function shareChannel() {
+  if (navigator.share && channels[activeChannelIndex]) {
+    const channel = channels[activeChannelIndex];
+    navigator.share({
+      title: `Watch ${channel.name} Live`,
+      text: channel.desc,
+      url: window.location.href + '#channel-' + activeChannelIndex
+    }).catch(console.log);
+  } else {
+    // Fallback copy to clipboard
+    const channel = channels[activeChannelIndex];
+    navigator.clipboard.writeText(`Check out ${channel.name}: ${window.location.href}#channel-${activeChannelIndex}`);
+    showNotification('Link copied to clipboard!');
+  }
+}
+
+// Initialize controls
+function initControls() {
+  // Initialize theme
+  initTheme();
+  
+  // Initialize mobile controls
+  initMobileControls();
+  
+  // Theme toggle
+  document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+  
+  // PIP button
+  document.getElementById('pipBtn').addEventListener('click', togglePip);
+  
+  // EPG button
+  document.getElementById('epgBtn').addEventListener('click', () => {
+    loadEPG(activeChannelIndex);
+  });
+  
+  // Shortcuts help
+  document.getElementById('shortcutsBtn').addEventListener('click', () => {
+    document.getElementById('shortcutsHelp').classList.add('show');
+  });
+  
+  document.getElementById('closeShortcuts').addEventListener('click', () => {
+    document.getElementById('shortcutsHelp').classList.remove('show');
+  });
+  
+  // Parental PIN
+  document.getElementById('pinSubmit').addEventListener('click', () => {
+    const pin = document.getElementById('pinInput').value;
+    if (pin === parentalPIN) {
+      document.getElementById('parentalPin').classList.remove('show');
+      showNotification('Parental control unlocked');
+    } else {
+      showNotification('Incorrect PIN');
+    }
+    document.getElementById('pinInput').value = '';
+  });
+  
+  document.getElementById('pinCancel').addEventListener('click', () => {
+    document.getElementById('parentalPin').classList.remove('show');
+    document.getElementById('pinInput').value = '';
+  });
+  
+  // Control column toggle
+  const controlToggle = document.getElementById('controlToggle');
+  controlToggle.addEventListener('click', toggleControls);
+  
+  // Tap anywhere to show controls
+  const tapToShow = document.getElementById('tapToShow');
+  tapToShow.addEventListener('click', showControlsTemporarily);
+  
+  // Volume control
+  const volumeSlider = document.getElementById('volumeSlider');
+  const volumeBtn = document.getElementById('volumeBtn');
+  
+  volumeSlider.value = localStorage.getItem('tvVolume') || '1';
+  
+  volumeSlider.addEventListener('input', (e) => {
+    const volume = parseFloat(e.target.value);
+    if (activeVideo) {
+      activeVideo.volume = volume;
+      activeVideo.muted = false;
+    }
+    localStorage.setItem('tvVolume', volume);
+    updateVolumeButton();
+  });
+  
+  volumeBtn.addEventListener('click', () => {
+    if (activeVideo) {
+      if (activeVideo.volume > 0) {
+        activeVideo.volume = 0;
+        activeVideo.muted = true;
+        volumeSlider.value = '0';
+      } else {
+        activeVideo.volume = parseFloat(localStorage.getItem('tvVolume') || '1');
+        activeVideo.muted = false;
+        volumeSlider.value = activeVideo.volume;
+      }
+      localStorage.setItem('tvVolume', activeVideo.volume);
+      updateVolumeButton();
+    }
+  });
+  
+  // Fullscreen
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(console.log);
+        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+      } else {
+        document.exitFullscreen().catch(console.log);
+        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+      }
+    });
+    
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+      } else {
+        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+      }
+    });
+  }
+  
+  // Stream info
+  const infoBtn = document.getElementById('infoBtn');
+  if (infoBtn) {
+    const streamInfo = document.getElementById('streamInfo');
+    infoBtn.addEventListener('click', () => {
+      infoBtn.classList.toggle('active');
+      streamInfo.classList.toggle('show');
+    });
+  }
+  
+  // Sleep timer
+  const sleepBtn = document.getElementById('sleepBtn');
+  if (sleepBtn) {
+    const sleepTimerPanel = document.getElementById('sleepTimer');
+    const cancelTimerBtn = document.getElementById('cancelTimer');
+    
+    sleepBtn.addEventListener('click', () => {
+      sleepTimerPanel.classList.toggle('show');
+    });
+    
+    document.querySelectorAll('.timer-btn[data-minutes]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const minutes = parseInt(btn.dataset.minutes);
+        setSleepTimer(minutes);
+        sleepTimerPanel.classList.remove('show');
+      });
+    });
+    
+    document.getElementById('setCustomTimer').addEventListener('click', () => {
+      const minutes = parseInt(document.getElementById('customTimer').value);
+      if (minutes > 0) {
+        setSleepTimer(minutes);
+        sleepTimerPanel.classList.remove('show');
+      }
+    });
+    
+    cancelTimerBtn.addEventListener('click', () => {
+      clearTimeout(sleepTimer);
+      sleepTimer = null;
+      sleepTimerPanel.classList.remove('show');
+      showNotification('Sleep timer cancelled');
+    });
+  }
+  
+  // Share channel
+  const shareBtn = document.getElementById('shareBtn');
+  shareBtn.addEventListener('click', shareChannel);
+  
+  // Favorite button
+  const favoriteBtn = document.getElementById('favoriteBtn');
+  favoriteBtn.addEventListener('click', () => {
+    toggleFavorite(activeChannelIndex);
+  });
+  
+  // Sidebar toggle
+  const sidebarBtn = document.getElementById('sidebarBtn');
+  sidebarBtn.addEventListener('click', toggleSidebar);
+  
+  // Close sidebar when clicking outside
+  document.addEventListener('click', (e) => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('open') && 
+        !sidebar.contains(e.target) && 
+        !e.target.closest('#sidebarBtn')) {
+      sidebar.classList.remove('open');
+    }
+  });
+  
+  // Close sleep timer when clicking outside
+  document.addEventListener('click', (e) => {
+    const sleepTimerPanel = document.getElementById('sleepTimer');
+    if (sleepTimerPanel && sleepTimerPanel.classList.contains('show') && 
+        !sleepTimerPanel.contains(e.target) && 
+        !e.target.closest('#sleepBtn')) {
+      sleepTimerPanel.classList.remove('show');
+    }
+  });
+  
+  // Handle escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      }
+      if (document.getElementById('shortcutsHelp').classList.contains('show')) {
+        document.getElementById('shortcutsHelp').classList.remove('show');
+      }
+      if (document.getElementById('parentalPin').classList.contains('show')) {
+        document.getElementById('parentalPin').classList.remove('show');
+      }
+      if (document.getElementById('sleepTimer')?.classList.contains('show')) {
+        document.getElementById('sleepTimer').classList.remove('show');
+      }
+    }
+  });
+  
+  // Close EPG when clicking outside
+  document.addEventListener('click', (e) => {
+    const epgOverlay = document.getElementById('epgOverlay');
+    if (epgOverlay.classList.contains('show') && 
+        !epgOverlay.contains(e.target) && 
+        !e.target.closest('#epgBtn')) {
+      epgOverlay.classList.remove('show');
+    }
+  });
+  
+  // Search functionality
+  const searchBar = document.getElementById('searchBar');
+  const searchFloat = document.getElementById('searchFloat');
+  const searchInput = document.getElementById('searchInput');
+  
+  function hideSearch() {
+    searchBar.classList.add('hidden');
+    searchFloat.classList.add('show');
+  }
+  
+  function showSearch() {
+    searchBar.classList.remove('hidden');
+    searchFloat.classList.remove('show');
+    searchInput.focus();
+  }
+  
+  searchFloat.onclick = showSearch;
+  
+  searchInput.oninput = () => {
+    const q = searchInput.value.trim().toLowerCase();
+    const filtered = channels.filter(c => 
+      c.name.toLowerCase().includes(q) || 
+      (c.desc && c.desc.toLowerCase().includes(q))
+    );
+    render(filtered);
+  };
+  
+  // Initialize keyboard shortcuts
+  initKeyboardShortcuts();
+  
+  // Auto-hide controls after 3 seconds
+  setTimeout(() => {
+    hideControls();
+  }, 3000);
+}
+
+// Set sleep timer
+function setSleepTimer(minutes) {
+  clearTimeout(sleepTimer);
+  
+  sleepTimer = setTimeout(() => {
+    if (activeVideo) {
+      activeVideo.pause();
+      showNotification(`Sleep timer: Player paused after ${minutes} minutes`);
+    }
+  }, minutes * 60000);
+  
+  showNotification(`Sleep timer set for ${minutes} minutes`);
+}
+
+// Show notification
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.remove(), 3000);
+}
+
+// Load channels
+fetch('channels.json')
+  .then(res => res.json())
+  .then(data => {
+    channels = data;
+    render(channels);
+    initControls();
+    updateWatchHistory();
+  })
+  .catch(err => {
+    console.error('Failed to load channels.json', err);
+    showNotification('Failed to load channels. Please check your connection.');
+  });
+
+// Load message
+fetch('message.json')
+  .then(res => res.json())
+  .then(msg => {
+    if (msg.enabled) {
+      document.getElementById('pTitle').textContent = msg.title || '';
+      document.getElementById('pText').textContent = msg.message || '';
+      document.getElementById('pBtn').textContent = msg.button || 'Close';
+
+      const popupContainer = document.querySelector('#popup > div');
+      popupContainer.className = '';
+      if (msg.type === 'warning') popupContainer.classList.add('popup-warning');
+      else if (msg.type === 'error') popupContainer.classList.add('popup-error');
+
+      document.getElementById('popup').style.display = 'flex';
+    }
+  })
+  .catch(() => {});
+
+document.getElementById('pBtn').onclick = () => {
+  document.getElementById('popup').style.display = 'none';
+};
+
+// Handle hash navigation
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash;
+  if (hash.startsWith('#channel-')) {
+    const index = parseInt(hash.replace('#channel-', ''));
+    if (!isNaN(index) && channels[index]) {
+      const sections = feed.querySelectorAll('.channel');
+      if (sections[index]) {
+        sections[index].scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }
+});
+
+// Initial hash check
+if (window.location.hash) {
+  setTimeout(() => {
+    window.dispatchEvent(new Event('hashchange'));
+  }, 500);
+}
+
+// Check PIP support
+if ('pictureInPictureEnabled' in document) {
+  document.getElementById('pipBtn').style.display = 'flex';
+} else {
+  document.getElementById('pipBtn').style.display = 'none';
+}
+
+// Handle orientation change
+window.addEventListener('orientationchange', () => {
+  // Refresh video on orientation change
+  setTimeout(() => {
+    if (activeVideo) {
+      activeVideo.style.height = '100%';
+      activeVideo.style.width = '100%';
+    }
+  }, 300);
+});
+
+// Handle online/offline status
+window.addEventListener('online', () => {
+  showNotification('Back online');
+  // Try to reload current video
+  if (activeVideo && activeVideo._hls) {
+    activeVideo._hls.startLoad();
+  }
+});
+
+window.addEventListener('offline', () => {
+  showNotification('You are offline');
+});
+
+// Prevent pull-to-refresh on iOS
+document.addEventListener('touchmove', function(e) {
+  if (e.scale !== 1) { e.preventDefault(); }
+}, { passive: false });
+
+// Handle iOS safe area
+function updateSafeArea() {
+  const safeAreaTop = `env(safe-area-inset-top, 20px)`;
+  const safeAreaBottom = `env(safe-area-inset-bottom, 20px)`;
+  
+  // Update elements that need safe area adjustments
+  const elements = document.querySelectorAll('.search-bar, .search-float, .sidebar, .mobile-bottom-controls');
+  elements.forEach(el => {
+    if (el.classList.contains('search-bar') || el.classList.contains('search-float')) {
+      el.style.top = safeAreaTop;
+    }
+    if (el.classList.contains('mobile-bottom-controls')) {
+      el.style.bottom = safeAreaBottom;
+    }
+  });
+}
+
+// Initial safe area update
+updateSafeArea();
+
+// Update on resize
+window.addEventListener('resize', updateSafeArea);
+</script>
+</body>
+</html>
