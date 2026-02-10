@@ -185,11 +185,6 @@
     "url": "https://cdnstack.internetmultimediaonline.org/lwsat/lwsat.stream/index.m3u8"
   },
   {
-    "name": "LOL Network",
-    "desc": "Kevin Hart–curated comedy channel with stand-up and original shows.",
-    "url": "https://aegis-cloudfront-1.tubi.video/54f95462-b44d-4c99-b74b-af49467454fa/playlist.m3u8"
-  },
-  {
     "name": "Lone Star",
     "desc": "Classic western movies and TV series streaming 24/7.",
     "url": "https://lonestar-rakuten.amagi.tv/playlist.m3u8"
